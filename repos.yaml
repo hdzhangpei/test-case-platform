@@ -14,7 +14,7 @@
 backend:
   nr-eiam:
     git: https://git.n.xiaomi.com/nr-mp-govern/nr-eiam.git
-    branch: master
+    branch: cn_master
     path: backend/nr-eiam
     domain: 组织中台
     keywords: [数字人, 岗位虾, 龙虾, 组织架构, 人岗管理, eiam, digital-user, agent]
