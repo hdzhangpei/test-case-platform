@@ -1,0 +1,31 @@
+{
+  "name": "@digital-user/api-test-framework",
+  "version": "0.1.0",
+  "description": "API 测试工作流框架：YAML 用例 → 审查 HTML → Java 单测 → 测试报告",
+  "type": "module",
+  "bin": {
+    "tc": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "validate": "tsx src/cli.ts validate",
+    "review": "tsx src/cli.ts review",
+    "codegen": "tsx src/cli.ts codegen",
+    "report": "tsx src/cli.ts report"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "fast-xml-parser": "^4.5.0",
+    "glob": "^11.0.0",
+    "handlebars": "^4.7.8",
+    "yaml": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

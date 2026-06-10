@@ -1,0 +1,62 @@
+# ============================================================
+# 数字用户中心 ALL IN CODE — Meta-Repo .gitignore
+# ============================================================
+# 原则：外层仓只跟踪"胶水"文件（变更记录、测试制品、知识库、工具脚本），
+#       内层服务代码由各自内部仓管理，bootstrap.sh 拉取后忽略。
+# ============================================================
+
+# ------ 拉取的内部仓（bootstrap.sh 产物） ------
+backend/*/
+frontend/*/
+
+# 保留目录占位
+!backend/.gitkeep
+!frontend/.gitkeep
+
+# ------ Java / Maven ------
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ------ Frontend / Node ------
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+*.tsbuildinfo
+.eslintcache
+
+# ------ Python ------
+__pycache__/
+*.pyc
+
+# ------ IDE ------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+*~
+
+# ------ OS ------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ------ Misc ------
+*.bak
+*.tmp
+*.orig
+.env
+.env.local

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测试报告 - {{requirement}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; padding: 24px; }
+.header { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header h1 { font-size: 22px; margin-bottom: 8px; }
+.header .meta { color: #666; font-size: 14px; }
+.summary { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+.summary-card { background: #fff; border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 120px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.summary-card .number { font-size: 32px; font-weight: bold; }
+.summary-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.summary-card.total .number { color: #333; }
+.summary-card.passed .number { color: #22c55e; }
+.summary-card.failed .number { color: #ef4444; }
+.summary-card.skipped .number { color: #f59e0b; }
+.summary-card.error .number { color: #dc2626; }
+.summary-card.duration .number { color: #6366f1; font-size: 24px; }
+
+.progress-bar { height: 8px; border-radius: 4px; background: #e5e7eb; margin: 16px 0; overflow: hidden; display: flex; }
+.progress-bar .passed { background: #22c55e; }
+.progress-bar .failed { background: #ef4444; }
+.progress-bar .skipped { background: #f59e0b; }
+.progress-bar .error { background: #dc2626; }
+
+.case-table { width: 100%; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; margin-top: 16px; }
+.case-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.case-table th { background: #f9fafb; text-align: left; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; font-weight: 600; }
+.case-table td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+.case-table tr:last-child td { border-bottom: none; }
+.case-table tr:hover td { background: #f9fafb; }
+
+.status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.status-badge.passed { background: #dcfce7; color: #166534; }
+.status-badge.failed { background: #fef2f2; color: #991b1b; }
+.status-badge.skipped { background: #fef9c3; color: #92400e; }
+.status-badge.error { background: #fee2e2; color: #7f1d1d; }
+
+.error-detail { margin-top: 8px; padding: 10px 14px; background: #fef2f2; border-radius: 4px; font-size: 13px; color: #991b1b; cursor: pointer; }
+.error-detail .message { font-weight: 500; }
+.stack-trace { display: none; margin-top: 8px; padding: 10px; background: #1e293b; color: #e2e8f0; border-radius: 4px; font-family: monospace; font-size: 11px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+.stack-trace.expanded { display: block; }
+
+.case-id { font-family: monospace; font-size: 12px; color: #6b7280; }
+.duration { font-family: monospace; font-size: 12px; color: #9ca3af; }
+
+.footer { margin-top: 24px; padding: 16px; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.footer .env-info { font-size: 13px; color: #6b7280; }
+.footer .env-info span { margin-right: 24px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>API 测试报告</h1>
+  <div class="meta">
+    需求: <strong>{{requirement}}</strong> | 环境: {{environment}} | 生成时间: {{generated}}
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card total">
+    <div class="number">{{summary.total}}</div>
+    <div class="label">总计</div>
+  </div>
+  <div class="summary-card passed">
+    <div class="number">{{summary.passed}}</div>
+    <div class="label">通过</div>
+  </div>
+  <div class="summary-card failed">
+    <div class="number">{{summary.failed}}</div>
+    <div class="label">失败</div>
+  </div>
+  <div class="summary-card skipped">
+    <div class="number">{{summary.skipped}}</div>
+    <div class="label">跳过</div>
+  </div>
+  <div class="summary-card error">
+    <div class="number">{{summary.error}}</div>
+    <div class="label">错误</div>
+  </div>
+  <div class="summary-card duration">
+    <div class="number">{{formatDuration summary.duration}}</div>
+    <div class="label">总耗时</div>
+  </div>
+</div>
+
+<div class="progress-bar">
+  {{#if summary.total}}
+  <div class="passed" style="width: {{percent summary.passed summary.total}}%"></div>
+  <div class="failed" style="width: {{percent summary.failed summary.total}}%"></div>
+  <div class="skipped" style="width: {{percent summary.skipped summary.total}}%"></div>
+  <div class="error" style="width: {{percent summary.error summary.total}}%"></div>
+  {{/if}}
+</div>
+
+<div class="case-table">
+  <table>
+    <thead>
+      <tr>
+        <th>状态</th>
+        <th>用例 ID</th>
+        <th>用例名称</th>
+        <th>耗时</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each cases}}
+      <tr>
+        <td><span class="status-badge {{status}}">{{statusLabel status}}</span></td>
+        <td><span class="case-id">{{id}}</span></td>
+        <td>
+          {{name}}
+          {{#if errorMessage}}
+          <div class="error-detail" onclick="toggleStack(this)">
+            <div class="message">{{errorMessage}}</div>
+            {{#if stackTrace}}
+            <pre class="stack-trace">{{stackTrace}}</pre>
+            {{/if}}
+          </div>
+          {{/if}}
+        </td>
+        <td><span class="duration">{{formatDuration duration}}</span></td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  <div class="env-info">
+    <span>环境: {{environment}}</span>
+    <span>生成工具: @digital-user/api-test-framework</span>
+    <span>时间: {{generated}}</span>
+  </div>
+</div>
+
+<script>
+function toggleStack(el) {
+  const stack = el.querySelector('.stack-trace');
+  if (stack) stack.classList.toggle('expanded');
+}
+</script>
+</body>
+</html>

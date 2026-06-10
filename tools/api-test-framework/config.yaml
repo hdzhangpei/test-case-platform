@@ -1,0 +1,20 @@
+# API 测试框架配置
+# 从 repos.yaml 读取服务基础路径，此处配置测试代码生成的子路径
+
+# 默认生成目标（当 YAML 用例未指定 project 时使用）
+default_project: example
+
+# 各服务的测试代码生成配置
+projects:
+  # 占位示例：在 repos.yaml 注册服务后，把下面 key 改成对应服务名并填写真实配置
+  example:
+    # 对应 repos.yaml 中 backend.<key>.path
+    repo_key: example
+    # 测试源码相对于服务根目录的子路径
+    test_src: example-server/src/test/java
+    # 生成代码的包名
+    package: com.example.generated
+    # Spring Boot 启动类
+    bootstrap_class: com.example.ExampleBootstrap
+    # 测试 profile
+    active_profile: dev

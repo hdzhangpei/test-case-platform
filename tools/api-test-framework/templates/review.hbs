@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API 测试用例审查 - {{requirement}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; padding: 24px; }
+.header { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header h1 { font-size: 22px; margin-bottom: 8px; }
+.header .meta { color: #666; font-size: 14px; }
+.summary { display: flex; gap: 16px; margin: 16px 0; }
+.summary-card { background: #fff; border-radius: 8px; padding: 16px 24px; flex: 1; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.summary-card .number { font-size: 28px; font-weight: bold; }
+.summary-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.summary-card.total .number { color: #333; }
+.summary-card.pass .number { color: #22c55e; }
+.summary-card.warning .number { color: #f59e0b; }
+.summary-card.fail .number { color: #ef4444; }
+.case-list { margin-top: 16px; }
+.case-item { background: #fff; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+.case-header { padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
+.case-header:hover { background: #f9fafb; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.pass { background: #22c55e; }
+.status-dot.warning { background: #f59e0b; }
+.status-dot.fail { background: #ef4444; }
+.case-id { font-family: monospace; font-size: 13px; color: #6b7280; min-width: 180px; }
+.case-name-display { flex: 1; font-weight: 500; }
+.badges { display: flex; gap: 6px; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+.badge.p0 { background: #fef2f2; color: #dc2626; }
+.badge.p1 { background: #fef9c3; color: #a16207; }
+.badge.p2 { background: #f0f9ff; color: #0369a1; }
+.badge.smoke { background: #ecfdf5; color: #059669; }
+.badge.regression { background: #f5f3ff; color: #7c3aed; }
+.badge.edge_case { background: #fff7ed; color: #c2410c; }
+.case-detail { display: none; padding: 0 20px 20px; border-top: 1px solid #f3f4f6; }
+.case-detail.expanded { display: block; }
+.detail-section { margin-top: 16px; }
+.detail-section h4 { font-size: 13px; color: #6b7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.detail-table th { background: #f9fafb; text-align: left; padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 500; }
+.detail-table td { padding: 8px 12px; border: 1px solid #e5e7eb; }
+.detail-table td.field { font-family: monospace; }
+.detail-table input, .detail-table select { width: 100%; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; font-family: monospace; }
+.detail-table input:focus, .detail-table select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+.meta-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.meta-row label { font-size: 12px; color: #6b7280; }
+.meta-row input, .meta-row select { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
+.meta-row input { width: 200px; }
+.error-list, .warning-list { margin-top: 8px; padding: 8px 12px; border-radius: 4px; font-size: 13px; }
+.error-list { background: #fef2f2; color: #dc2626; }
+.warning-list { background: #fef9c3; color: #92400e; }
+.error-list li, .warning-list li { margin-left: 16px; margin-bottom: 4px; }
+.btn-save { margin-top: 16px; padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
+.btn-save:hover { background: #2563eb; }
+.btn-save:disabled { background: #9ca3af; cursor: not-allowed; }
+.save-status { display: inline-block; margin-left: 12px; font-size: 13px; }
+.save-status.success { color: #22c55e; }
+.save-status.error { color: #ef4444; }
+.toggle-raw { font-size: 12px; color: #6b7280; cursor: pointer; margin-top: 12px; display: inline-block; }
+.toggle-raw:hover { color: #3b82f6; }
+pre.yaml-raw { background: #1e293b; color: #e2e8f0; padding: 12px 16px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin-top: 8px; max-height: 400px; overflow-y: auto; }
+.arrow { transition: transform 0.2s; display: inline-block; margin-right: 4px; }
+.arrow.expanded { transform: rotate(90deg); }
+.footer { margin-top: 24px; text-align: center; color: #9ca3af; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>API 测试用例审查</h1>
+  <div class="meta">
+    需求: <strong>{{requirement}}</strong> | 生成时间: {{generated}} | 共 {{totalCases}} 个用例
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card total"><div class="number">{{totalCases}}</div><div class="label">总计</div></div>
+  <div class="summary-card pass"><div class="number">{{passedCount}}</div><div class="label">校验通过</div></div>
+  <div class="summary-card warning"><div class="number">{{warningCount}}</div><div class="label">有警告</div></div>
+  <div class="summary-card fail"><div class="number">{{failedCount}}</div><div class="label">校验失败</div></div>
+</div>
+
+<div class="case-list">
+  {{#each cases}}
+  <div class="case-item" data-case-id="{{id}}" data-case-json="{{{escapeAttr dataJson}}}">
+    <div class="case-header" onclick="toggleDetail(this)">
+      <span class="arrow">&#9654;</span>
+      <span class="status-dot {{status}}"></span>
+      <span class="case-id">{{id}}</span>
+      <span class="case-name-display">{{name}}</span>
+      <div class="badges">
+        <span class="badge {{lowercase priority}}">{{priority}}</span>
+        <span class="badge {{lowercase group}}">{{group}}</span>
+      </div>
+    </div>
+    <div class="case-detail">
+      {{#if errors}}
+      <div class="error-list"><strong>校验错误:</strong><ul>{{#each errors}}<li>[{{layer}}] {{path}}: {{message}}</li>{{/each}}</ul></div>
+      {{/if}}
+      {{#if warnings}}
+      <div class="warning-list"><strong>警告:</strong><ul>{{#each warnings}}<li>[{{layer}}] {{path}}: {{message}}</li>{{/each}}</ul></div>
+      {{/if}}
+
+      <div class="detail-section">
+        <h4>基本信息</h4>
+        <div class="meta-row">
+          <label>名称: <input type="text" data-path="metadata.name" value="{{{escapeAttr name}}}"></label>
+          <label>优先级:
+            <select data-path="metadata.priority">
+              <option value="P0" {{#if (eq priority "P0")}}selected{{/if}}>P0</option>
+              <option value="P1" {{#if (eq priority "P1")}}selected{{/if}}>P1</option>
+              <option value="P2" {{#if (eq priority "P2")}}selected{{/if}}>P2</option>
+            </select>
+          </label>
+          <label>分组:
+            <select data-path="metadata.group">
+              <option value="SMOKE" {{#if (eq group "SMOKE")}}selected{{/if}}>SMOKE</option>
+              <option value="REGRESSION" {{#if (eq group "REGRESSION")}}selected{{/if}}>REGRESSION</option>
+              <option value="EDGE_CASE" {{#if (eq group "EDGE_CASE")}}selected{{/if}}>EDGE_CASE</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>目标接口</h4>
+        <table class="detail-table">
+          <tr><th>Service</th><td class="field">{{service}}</td><th>Method</th><td class="field">{{method}}</td></tr>
+          <tr><th>Input DTO</th><td class="field" colspan="3">{{inputType}}</td></tr>
+        </table>
+      </div>
+
+      <div class="detail-section">
+        <h4>输入字段</h4>
+        <table class="detail-table">
+          <tr><th style="width:20%">字段</th><th style="width:20%">类型</th><th>值</th></tr>
+          {{#each fields}}
+          <tr>
+            <td class="field">{{field}}</td>
+            <td>{{type}}</td>
+            <td><input type="text" data-path="input.fields[{{@index}}].value" value="{{{escapeAttr value}}}"></td>
+          </tr>
+          {{/each}}
+        </table>
+      </div>
+
+      <div class="detail-section">
+        <h4>断言</h4>
+        <table class="detail-table">
+          <tr><th style="width:15%">类型</th><th style="width:35%">目标</th><th>期望值</th></tr>
+          {{#each assertions}}
+          <tr>
+            <td>
+              <select data-path="expected.assertions[{{@index}}].type">
+                <option value="not_null" {{#if (eq type "not_null")}}selected{{/if}}>not_null</option>
+                <option value="equals" {{#if (eq type "equals")}}selected{{/if}}>equals</option>
+                <option value="true" {{#if (eq type "true")}}selected{{/if}}>true</option>
+                <option value="false" {{#if (eq type "false")}}selected{{/if}}>false</option>
+                <option value="contains" {{#if (eq type "contains")}}selected{{/if}}>contains</option>
+                <option value="greater_than" {{#if (eq type "greater_than")}}selected{{/if}}>greater_than</option>
+              </select>
+            </td>
+            <td><input type="text" data-path="expected.assertions[{{@index}}].target" value="{{{escapeAttr target}}}"></td>
+            <td><input type="text" data-path="expected.assertions[{{@index}}].value" value="{{{escapeAttr value}}}"></td>
+          </tr>
+          {{/each}}
+        </table>
+      </div>
+
+      <div class="detail-section">
+        <h4>备注</h4>
+        <textarea data-path="notes" rows="3" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d1d5db;border-radius:4px;">{{notes}}</textarea>
+      </div>
+
+      <div style="margin-top:16px; display:flex; align-items:center;">
+        <button class="btn-save" onclick="saveCase('{{id}}')">保存修改</button>
+        <span class="save-status" id="status-{{id}}"></span>
+      </div>
+
+      <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+      <pre class="yaml-raw" style="display:none">{{raw}}</pre>
+    </div>
+  </div>
+  {{/each}}
+</div>
+
+<div style="text-align:center; margin-top:24px;">
+  <button onclick="finishReview()" style="padding:12px 32px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer;">审查完成</button>
+  <div id="done-hint" style="margin-top:8px; font-size:13px; color:#6b7280;"></div>
+</div>
+
+<div class="footer">Generated by @digital-user/api-test-framework | {{generated}}</div>
+
+<script>
+async function finishReview() {
+  if (!confirm('确认审查完成？服务将自动关闭。')) return;
+  const hint = document.getElementById('done-hint');
+  try {
+    await fetch('/api/done', { method: 'POST' });
+    hint.textContent = '服务已关闭，可以关闭此页面。';
+    hint.style.color = '#22c55e';
+  } catch(e) {
+    hint.textContent = '服务已关闭。';
+    hint.style.color = '#22c55e';
+  }
+}
+
+function toggleDetail(header) {
+  const detail = header.nextElementSibling;
+  const arrow = header.querySelector('.arrow');
+  detail.classList.toggle('expanded');
+  arrow.classList.toggle('expanded');
+}
+function toggleRaw(btn) {
+  const pre = btn.nextElementSibling;
+  if (pre.style.display === 'none') { pre.style.display = 'block'; btn.textContent = '隐藏原始 YAML'; }
+  else { pre.style.display = 'none'; btn.textContent = '显示原始 YAML'; }
+}
+
+function setNestedValue(obj, path, value) {
+  const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
+  let cur = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const key = /^\d+$/.test(parts[i]) ? parseInt(parts[i]) : parts[i];
+    if (cur[key] === undefined) cur[key] = /^\d+$/.test(parts[i+1]) ? [] : {};
+    cur = cur[key];
+  }
+  const lastKey = /^\d+$/.test(parts[parts.length-1]) ? parseInt(parts[parts.length-1]) : parts[parts.length-1];
+  cur[lastKey] = value;
+}
+
+function parseValue(str) {
+  if (str === '' || str === undefined || str === null) return undefined;
+  if (str === 'true') return true;
+  if (str === 'false') return false;
+  // Try JSON parse for arrays/objects
+  if ((str.startsWith('[') && str.endsWith(']')) || (str.startsWith('{') && str.endsWith('}'))) {
+    try { return JSON.parse(str); } catch(e) {}
+  }
+  // Try number
+  const num = Number(str);
+  if (!isNaN(num) && str.trim() !== '') return num;
+  return str;
+}
+
+async function saveCase(caseId) {
+  const item = document.querySelector(`[data-case-id="${caseId}"]`);
+  const statusEl = document.getElementById('status-' + caseId);
+  const btn = item.querySelector('.btn-save');
+
+  // Load original data
+  const data = JSON.parse(item.getAttribute('data-case-json'));
+
+  // Collect all editable inputs
+  const inputs = item.querySelectorAll('[data-path]');
+  inputs.forEach(input => {
+    const path = input.getAttribute('data-path');
+    let val;
+    if (input.tagName === 'TEXTAREA') {
+      val = input.value;
+    } else if (input.tagName === 'SELECT') {
+      val = input.value;
+    } else {
+      val = parseValue(input.value);
+    }
+    if (val !== undefined) {
+      setNestedValue(data, path, val);
+    } else {
+      // Remove the key for undefined values (like empty assertion value)
+      const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
+      let cur = data;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const key = /^\d+$/.test(parts[i]) ? parseInt(parts[i]) : parts[i];
+        if (!cur[key]) return;
+        cur = cur[key];
+      }
+      const lastKey = /^\d+$/.test(parts[parts.length-1]) ? parseInt(parts[parts.length-1]) : parts[parts.length-1];
+      delete cur[lastKey];
+    }
+  });
+
+  btn.disabled = true;
+  statusEl.textContent = '保存中...';
+  statusEl.className = 'save-status';
+
+  try {
+    const resp = await fetch('/api/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caseId, data })
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      statusEl.textContent = '已保存';
+      statusEl.className = 'save-status success';
+      item.setAttribute('data-case-json', JSON.stringify(data));
+    } else {
+      statusEl.textContent = '保存失败: ' + result.error;
+      statusEl.className = 'save-status error';
+    }
+  } catch(e) {
+    statusEl.textContent = '网络错误: ' + e.message;
+    statusEl.className = 'save-status error';
+  }
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>

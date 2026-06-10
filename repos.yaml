@@ -1,0 +1,28 @@
+# ============================================================
+# 数字用户中心 ALL IN CODE — 代码仓清单
+# ============================================================
+# bootstrap.sh 读取本文件，将各仓库克隆/更新到指定路径。
+#
+# 字段说明：
+#   git:      内部 GitLab 仓库地址
+#   branch:   拉取分支（默认 master）
+#   path:     克隆到本地的相对路径
+#   domain:   所属业务领域（用于 Agent 快速定位）
+#   keywords: 关键词列表（Agent 按关键词匹配服务）
+# ============================================================
+
+backend:
+  # example-be:
+  #   git: https://git.n.xiaomi.com/{group}/{service}.git
+  #   branch: master
+  #   path: backend/example-backend
+  #   domain: 示例域
+  #   keywords: [关键词1, 关键词2]
+
+frontend:
+  # example-fe:
+  #   git: https://git.n.xiaomi.com/{group}/{fe-project}.git
+  #   branch: master
+  #   path: frontend/example-fe
+  #   domain: 示例域
+  #   keywords: [关键词1, 关键词2]
