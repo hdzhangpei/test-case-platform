@@ -8,7 +8,7 @@
 
 ## 领域知识（domains/）
 
-（待补充）
+- [digital-user.md](domains/digital-user.md) — 虚拟数字人（岗位虾）业务知识蒸馏
 
 ## 实体定义（entities/）
 
