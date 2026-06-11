@@ -185,7 +185,54 @@ tests/integration/<需求名>/
 
 ---
 
-## 9. 技术栈
+## 9. Compound Engineering 技能适配
+
+本项目已安装 Compound Engineering 插件（`/ce-*` 技能），为适配项目目录结构，使用时遵循以下映射：
+
+### 产出路径映射
+
+| CE 技能 | 默认路径 | 项目实际路径 | 说明 |
+|---------|----------|--------------|------|
+| `/ce-brainstorm` | `docs/brainstorms/` | `changesets/YYYY-MM/<需求名>/prd.md` | 需求文档 |
+| `/ce-plan` | `docs/plans/` | `changesets/YYYY-MM/<需求名>/design.md` | 实现计划 |
+| `/ce-compound` | `docs/solutions/` | `knowledge/domains/<主题>.md` | 知识沉淀 |
+| `/ce-product-pulse` | `docs/pulse-reports/` | `docs/pulse-reports/` | 保持默认 |
+| `/ce-debug` | `docs/solutions/` | `knowledge/faq/<问题>.md` | 调试记录 |
+
+### 使用规范
+
+**需求分析流程**：
+```bash
+/ce-brainstorm "xxx功能"
+# 产出：changesets/2026-06/xxx/prd.md
+
+/ce-plan changesets/2026-06/xxx/prd.md
+# 产出：changesets/2026-06/xxx/design.md
+```
+
+**知识沉淀流程**：
+```bash
+/ce-compound
+# 产出：knowledge/domains/xxx.md
+# 同步更新：knowledge/index.md
+```
+
+**代码审查流程**：
+```bash
+/ce-code-review
+# 产出：PR review comments（不生成文件）
+```
+
+### 注意事项
+
+1. **路径格式**：使用 `changesets/YYYY-MM/<需求名>/` 格式，按月归档
+2. **文件命名**：需求用 `prd.md`，设计用 `design.md`，变更记录用 `changelog.md`
+3. **知识更新**：`/ce-compound` 产出后需手动更新 `knowledge/index.md`
+4. **与现有流程一致**：CE 技能是辅助工具，产出仍遵循项目既有规范
+
+---
+
+## 10. 技术栈
 
 | 层级 | 技术 |
 |------|------|
