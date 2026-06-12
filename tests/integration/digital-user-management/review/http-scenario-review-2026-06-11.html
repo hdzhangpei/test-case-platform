@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP 场景审查 - digital-user-management</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; padding: 24px; }
+.header { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header h1 { font-size: 22px; margin-bottom: 8px; }
+.header .meta { color: #666; font-size: 14px; }
+.summary { display: flex; gap: 16px; margin: 16px 0; }
+.summary-card { background: #fff; border-radius: 8px; padding: 16px 24px; flex: 1; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.summary-card .number { font-size: 28px; font-weight: bold; }
+.summary-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.summary-card.total .number { color: #333; }
+.summary-card.ok .number { color: #22c55e; }
+.summary-card.bad .number { color: #ef4444; }
+.scenario-card { background: #fff; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+.scenario-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; }
+.scenario-header:hover { background: #f9fafb; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.ok { background: #22c55e; }
+.status-dot.bad { background: #ef4444; }
+.scenario-title { flex: 1; font-weight: 600; font-size: 15px; }
+.scenario-id { font-family: monospace; font-size: 13px; color: #6b7280; }
+.scenario-meta { font-size: 12px; color: #9ca3af; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; background: #f0f9ff; color: #0369a1; }
+.arrow { transition: transform 0.2s; display: inline-block; margin-right: 4px; color: #9ca3af; }
+.arrow.expanded { transform: rotate(90deg); }
+.scenario-body { display: none; padding: 0 20px 20px; border-top: 1px solid #f3f4f6; }
+.scenario-body.expanded { display: block; }
+.error-list { margin-top: 12px; padding: 10px 14px; background: #fef2f2; color: #dc2626; border-radius: 6px; font-size: 13px; }
+.error-list li { margin-left: 16px; margin-bottom: 4px; }
+.flow-chart { display: flex; align-items: center; gap: 0; margin: 16px 0; overflow-x: auto; padding: 8px 0; }
+.flow-step { display: flex; flex-direction: column; align-items: center; min-width: 100px; padding: 8px 12px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; position: relative; }
+.flow-step .step-num { font-size: 11px; color: #0369a1; font-weight: 600; }
+.flow-step .step-name { font-size: 12px; text-align: center; margin-top: 4px; line-height: 1.3; }
+.flow-step .step-method { font-size: 10px; color: #6b7280; margin-top: 2px; }
+.flow-arrow { display: flex; align-items: center; color: #94a3b8; font-size: 18px; margin: 0 4px; flex-shrink: 0; }
+.step-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+.step-table th { background: #f9fafb; text-align: left; padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 500; }
+.step-table td { padding: 8px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+.step-table td.mono { font-family: monospace; font-size: 12px; word-break: break-all; }
+.method-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; font-family: monospace; }
+.method-badge.POST { background: #dbeafe; color: #1d4ed8; }
+.method-badge.GET { background: #dcfce7; color: #166534; }
+.method-badge.PUT { background: #fef9c3; color: #a16207; }
+.method-badge.DELETE { background: #fef2f2; color: #dc2626; }
+.method-badge.PATCH { background: #f3e8ff; color: #7c3aed; }
+.capture-tag { display: inline-block; padding: 1px 6px; background: #ede9fe; color: #6d28d9; border-radius: 3px; font-size: 11px; font-family: monospace; }
+.body-block { background: #1e293b; color: #e2e8f0; padding: 10px 14px; border-radius: 6px; font-size: 12px; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; margin-top: 4px; }
+.toggle-raw { font-size: 12px; color: #6b7280; cursor: pointer; margin-top: 8px; display: inline-block; }
+.toggle-raw:hover { color: #3b82f6; }
+pre.yaml-raw { background: #1e293b; color: #e2e8f0; padding: 12px 16px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin-top: 8px; max-height: 400px; overflow-y: auto; }
+.footer { margin-top: 24px; text-align: center; color: #9ca3af; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>HTTP 场景审查</h1>
+  <div class="meta">
+    需求: <strong>digital-user-management</strong> | 生成时间: 2026-06-11 | 共 11 个场景，26 个步骤
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card total"><div class="number">11</div><div class="label">场景总数</div></div>
+  <div class="summary-card ok"><div class="number">11</div><div class="label">校验通过</div></div>
+  <div class="summary-card bad"><div class="number">0</div><div class="label">校验失败</div></div>
+</div>
+
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">创建数字人映射（正常流）</span>
+    <span class="scenario-id">create-mapping-001</span>
+    <span class="badge">1 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">创建数字人映射</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>创建数字人映射</strong><br><span style="color:#9ca3af;font-size:11px">create</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+              <div><span class="capture-tag">createdAgentId</span> &larr; <code>data.agentId</code></div>
+            
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;test-agent-auto-001&quot;,
+  &quot;miId&quot;: 999000001,
+  &quot;email&quot;: &quot;test-agent-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-001&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: create-mapping-001
+  name: &quot;创建数字人映射（正常流）&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [创建, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+steps:
+  - id: create
+    name: &quot;创建数字人映射&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;test-agent-auto-001&quot;
+        miId: 999000001
+        email: &quot;test-agent-001@example.com&quot;
+        name: &quot;测试岗位虾-001&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+    capture:
+      createdAgentId: &quot;data.agentId&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">创建数字人映射（异常流：agentId重复）</span>
+    <span class="scenario-id">create-mapping-002</span>
+    <span class="badge">2 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">首次创建数字人映射</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">重复创建（应失败）</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>首次创建数字人映射</strong><br><span style="color:#9ca3af;font-size:11px">first-create</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>重复创建（应失败）</strong><br><span style="color:#9ca3af;font-size:11px">duplicate-create</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>code</code> &rarr; -</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:duplicateAgentId}&quot;,
+  &quot;miId&quot;: 999000010,
+  &quot;email&quot;: &quot;test-agent-dup-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-dup&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:duplicateAgentId}&quot;,
+  &quot;miId&quot;: 999000011,
+  &quot;email&quot;: &quot;test-agent-dup-002@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-dup-重复&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: create-mapping-002
+  name: &quot;创建数字人映射（异常流：agentId重复）&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [创建, 异常流, EDGE_CASE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  duplicateAgentId: &quot;test-agent-dup-001&quot;
+
+steps:
+  - id: first-create
+    name: &quot;首次创建数字人映射&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:duplicateAgentId}&quot;
+        miId: 999000010
+        email: &quot;test-agent-dup-001@example.com&quot;
+        name: &quot;测试岗位虾-dup&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: duplicate-create
+    name: &quot;重复创建（应失败）&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:duplicateAgentId}&quot;
+        miId: 999000011
+        email: &quot;test-agent-dup-002@example.com&quot;
+        name: &quot;测试岗位虾-dup-重复&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;code&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">创建数字人映射（异常流：跨领域校验）</span>
+    <span class="scenario-id">create-mapping-003</span>
+    <span class="badge">2 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">在国内场景创建</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">跨领域创建（应失败）</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>在国内场景创建</strong><br><span style="color:#9ca3af;font-size:11px">create-cn</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>跨领域创建（应失败）</strong><br><span style="color:#9ca3af;font-size:11px">create-cross-domain</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>code</code> &rarr; -</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:crossDomainAgentId}&quot;,
+  &quot;miId&quot;: 999000020,
+  &quot;email&quot;: &quot;test-agent-cross-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-跨领域&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:crossDomainAgentId}&quot;,
+  &quot;miId&quot;: 999000020,
+  &quot;email&quot;: &quot;test-agent-cross-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-跨领域-国际&quot;,
+  &quot;scene&quot;: &quot;new_retail&quot;,
+  &quot;areaId&quot;: &quot;IN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: create-mapping-003
+  name: &quot;创建数字人映射（异常流：跨领域校验）&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [创建, 异常流, EDGE_CASE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  crossDomainAgentId: &quot;test-agent-cross-001&quot;
+
+steps:
+  - id: create-cn
+    name: &quot;在国内场景创建&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:crossDomainAgentId}&quot;
+        miId: 999000020
+        email: &quot;test-agent-cross-001@example.com&quot;
+        name: &quot;测试岗位虾-跨领域&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: create-cross-domain
+    name: &quot;跨领域创建（应失败）&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:crossDomainAgentId}&quot;
+        miId: 999000020
+        email: &quot;test-agent-cross-001@example.com&quot;
+        name: &quot;测试岗位虾-跨领域-国际&quot;
+        scene: &quot;new_retail&quot;
+        areaId: &quot;IN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;code&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">数字人完整CRUD流程</span>
+    <span class="scenario-id">crud-flow-001</span>
+    <span class="badge">6 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">创建数字人映射</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">查询刚创建的数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">03</span>
+        <span class="step-name">编辑数字人（改名+增加岗位）</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">04</span>
+        <span class="step-name">验证编辑结果</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">05</span>
+        <span class="step-name">禁用数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">06</span>
+        <span class="step-name">验证禁用后状态</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>创建数字人映射</strong><br><span style="color:#9ca3af;font-size:11px">create</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>查询刚创建的数字人</strong><br><span style="color:#9ca3af;font-size:11px">query-after-create</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>data</code> &rarr; -</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.agentId</code> &rarr; &quot;${fixture:testAgentId}&quot;</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.name</code> &rarr; &quot;测试岗位虾-CRUD&quot;</div>
+            
+          </td>
+          <td>
+              <div><span class="capture-tag">createdAgentId</span> &larr; <code>data.agentId</code></div>
+            
+          </td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><strong>编辑数字人（改名+增加岗位）</strong><br><span style="color:#9ca3af;font-size:11px">update</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>04</td>
+          <td><strong>验证编辑结果</strong><br><span style="color:#9ca3af;font-size:11px">verify-update</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.name</code> &rarr; &quot;测试岗位虾-CRUD-已编辑&quot;</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>05</td>
+          <td><strong>禁用数字人</strong><br><span style="color:#9ca3af;font-size:11px">disable</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>06</td>
+          <td><strong>验证禁用后状态</strong><br><span style="color:#9ca3af;font-size:11px">verify-disabled</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.userState</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;miId&quot;: &quot;${fixture:testMiId}&quot;,
+  &quot;email&quot;: &quot;${fixture:testEmail}&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-CRUD&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 03 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${capture:createdAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-CRUD-已编辑&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    },
+    {
+      &quot;positionId&quot;: 2,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 04 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${capture:createdAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 05 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${capture:createdAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;userState&quot;: 0
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 06 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${capture:createdAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: crud-flow-001
+  name: &quot;数字人完整CRUD流程&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [CRUD, 全流程, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  testAgentId: &quot;test-agent-crud-001&quot;
+  testMiId: 999000099
+  testEmail: &quot;test-agent-crud-001@example.com&quot;
+
+steps:
+  - id: create
+    name: &quot;创建数字人映射&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        miId: &quot;${fixture:testMiId}&quot;
+        email: &quot;${fixture:testEmail}&quot;
+        name: &quot;测试岗位虾-CRUD&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: query-after-create
+    name: &quot;查询刚创建的数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;data&quot;
+        - type: equals
+          target: &quot;data.agentId&quot;
+          value: &quot;${fixture:testAgentId}&quot;
+        - type: equals
+          target: &quot;data.name&quot;
+          value: &quot;测试岗位虾-CRUD&quot;
+    capture:
+      createdAgentId: &quot;data.agentId&quot;
+
+  - id: update
+    name: &quot;编辑数字人（改名+增加岗位）&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${capture:createdAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        name: &quot;测试岗位虾-CRUD-已编辑&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+          - positionId: 2
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: verify-update
+    name: &quot;验证编辑结果&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${capture:createdAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;data.name&quot;
+          value: &quot;测试岗位虾-CRUD-已编辑&quot;
+
+  - id: disable
+    name: &quot;禁用数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState&quot;
+      body:
+        agentId: &quot;${capture:createdAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        userState: 0
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: verify-disabled
+    name: &quot;验证禁用后状态&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${capture:createdAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;data.userState&quot;
+          value: 0
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">导出数字人列表</span>
+    <span class="scenario-id">export-list-001</span>
+    <span class="badge">1 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">导出数字人列表</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>导出数字人列表</strong><br><span style="color:#9ca3af;font-size:11px">export-list</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/exportDigitalUserList</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>$</code> &rarr; -</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;sceneList&quot;: [
+    &quot;new_retail_cn&quot;
+  ],
+  &quot;areaId&quot;: &quot;CN&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: export-list-001
+  name: &quot;导出数字人列表&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [导出, REGRESSION]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+steps:
+  - id: export-list
+    name: &quot;导出数字人列表&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/exportDigitalUserList&quot;
+      body:
+        sceneList: [&quot;new_retail_cn&quot;]
+        areaId: &quot;CN&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;$&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">查询数字人详情</span>
+    <span class="scenario-id">get-detail-001</span>
+    <span class="badge">2 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">先创建数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">查询数字人详情</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>先创建数字人</strong><br><span style="color:#9ca3af;font-size:11px">create-first</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>查询数字人详情</strong><br><span style="color:#9ca3af;font-size:11px">query-detail</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>data</code> &rarr; -</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.agentId</code> &rarr; &quot;${fixture:testAgentId}&quot;</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;miId&quot;: 999000030,
+  &quot;email&quot;: &quot;test-agent-detail-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-详情&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: get-detail-001
+  name: &quot;查询数字人详情&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [查询, 详情, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  testAgentId: &quot;test-agent-detail-001&quot;
+
+steps:
+  - id: create-first
+    name: &quot;先创建数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        miId: 999000030
+        email: &quot;test-agent-detail-001@example.com&quot;
+        name: &quot;测试岗位虾-详情&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: query-detail
+    name: &quot;查询数字人详情&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;data&quot;
+        - type: equals
+          target: &quot;data.agentId&quot;
+          value: &quot;${fixture:testAgentId}&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">查询数字人操作日志</span>
+    <span class="scenario-id">get-log-001</span>
+    <span class="badge">2 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">先创建数字人（产生操作日志）</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">查询操作日志</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>先创建数字人（产生操作日志）</strong><br><span style="color:#9ca3af;font-size:11px">create-first</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>查询操作日志</strong><br><span style="color:#9ca3af;font-size:11px">query-log</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserLog</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>data</code> &rarr; -</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">greater_than</span> <code>data.total</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;miId&quot;: 999000060,
+  &quot;email&quot;: &quot;test-agent-log-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-日志&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;pageNum&quot;: 1,
+  &quot;pageSize&quot;: 20
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: get-log-001
+  name: &quot;查询数字人操作日志&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [日志, 查询, REGRESSION]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  testAgentId: &quot;test-agent-log-001&quot;
+
+steps:
+  - id: create-first
+    name: &quot;先创建数字人（产生操作日志）&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        miId: 999000060
+        email: &quot;test-agent-log-001@example.com&quot;
+        name: &quot;测试岗位虾-日志&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: query-log
+    name: &quot;查询操作日志&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserLog&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        pageNum: 1
+        pageSize: 20
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;data&quot;
+        - type: greater_than
+          target: &quot;data.total&quot;
+          value: 0
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">分页查询岗位虾列表（模糊搜索）</span>
+    <span class="scenario-id">list-position-claws-001</span>
+    <span class="badge">1 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">查询岗位虾列表</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>查询岗位虾列表</strong><br><span style="color:#9ca3af;font-size:11px">list-claws</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/listPositionClaws</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>$</code> &rarr; -</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;sceneList&quot;: [
+    &quot;new_retail_cn&quot;
+  ],
+  &quot;pageNum&quot;: 1,
+  &quot;pageSize&quot;: 10,
+  &quot;areaId&quot;: &quot;CN&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: list-position-claws-001
+  name: &quot;分页查询岗位虾列表（模糊搜索）&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [查询, 搜索, REGRESSION]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+steps:
+  - id: list-claws
+    name: &quot;查询岗位虾列表&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/listPositionClaws&quot;
+      body:
+        sceneList: [&quot;new_retail_cn&quot;]
+        pageNum: 1
+        pageSize: 10
+        areaId: &quot;CN&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;$&quot;
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">分页查询数字人列表</span>
+    <span class="scenario-id">page-list-001</span>
+    <span class="badge">1 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">分页查询数字人列表</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>分页查询数字人列表</strong><br><span style="color:#9ca3af;font-size:11px">query-list</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/pageDigitalUserList</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">not_null</span> <code>$</code> &rarr; -</div>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+              <div><span class="capture-tag">totalCount</span> &larr; <code>data.total</code></div>
+            
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;sceneList&quot;: [
+    &quot;new_retail_cn&quot;
+  ],
+  &quot;pageNum&quot;: 1,
+  &quot;pageSize&quot;: 10,
+  &quot;areaId&quot;: &quot;CN&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: page-list-001
+  name: &quot;分页查询数字人列表&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [查询, 分页, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+steps:
+  - id: query-list
+    name: &quot;分页查询数字人列表&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/pageDigitalUserList&quot;
+      body:
+        sceneList: [&quot;new_retail_cn&quot;]
+        pageNum: 1
+        pageSize: 10
+        areaId: &quot;CN&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: &quot;$&quot;
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+    capture:
+      totalCount: &quot;data.total&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">编辑数字人映射</span>
+    <span class="scenario-id">update-mapping-001</span>
+    <span class="badge">3 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">先创建数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">编辑数字人映射（增加岗位）</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">03</span>
+        <span class="step-name">验证编辑结果</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>先创建数字人</strong><br><span style="color:#9ca3af;font-size:11px">create-first</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>编辑数字人映射（增加岗位）</strong><br><span style="color:#9ca3af;font-size:11px">update-mapping</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><strong>验证编辑结果</strong><br><span style="color:#9ca3af;font-size:11px">verify-update</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.name</code> &rarr; &quot;测试岗位虾-编辑后&quot;</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;miId&quot;: 999000040,
+  &quot;email&quot;: &quot;test-agent-update-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-编辑前&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-编辑后&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    },
+    {
+      &quot;positionId&quot;: 2,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 03 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: update-mapping-001
+  name: &quot;编辑数字人映射&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [编辑, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  testAgentId: &quot;test-agent-update-001&quot;
+
+steps:
+  - id: create-first
+    name: &quot;先创建数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        miId: 999000040
+        email: &quot;test-agent-update-001@example.com&quot;
+        name: &quot;测试岗位虾-编辑前&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: update-mapping
+    name: &quot;编辑数字人映射（增加岗位）&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        name: &quot;测试岗位虾-编辑后&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+          - positionId: 2
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: verify-update
+    name: &quot;验证编辑结果&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;data.name&quot;
+          value: &quot;测试岗位虾-编辑后&quot;
+</pre>
+  </div>
+</div>
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot ok"></span>
+    <span class="scenario-title">启用禁用数字人状态</span>
+    <span class="scenario-id">update-state-001</span>
+    <span class="badge">5 步骤</span>
+    <span class="scenario-meta">[object Object]</span>
+  </div>
+  <div class="scenario-body">
+
+    <div class="flow-chart">
+      <div class="flow-step">
+        <span class="step-num">01</span>
+        <span class="step-name">先创建数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">02</span>
+        <span class="step-name">禁用数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">03</span>
+        <span class="step-name">验证禁用状态</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">04</span>
+        <span class="step-name">重新启用数字人</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      <div class="flow-arrow">&#8594;</div>
+      <div class="flow-step">
+        <span class="step-num">05</span>
+        <span class="step-name">验证启用状态</span>
+        <span class="step-method"><span class="method-badge POST">POST</span></span>
+      </div>
+      
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>01</td>
+          <td><strong>先创建数字人</strong><br><span style="color:#9ca3af;font-size:11px">create-first</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td><strong>禁用数字人</strong><br><span style="color:#9ca3af;font-size:11px">disable</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td><strong>验证禁用状态</strong><br><span style="color:#9ca3af;font-size:11px">verify-disabled</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.userState</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>04</td>
+          <td><strong>重新启用数字人</strong><br><span style="color:#9ca3af;font-size:11px">re-enable</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>code</code> &rarr; 0</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+        <tr>
+          <td>05</td>
+          <td><strong>验证启用状态</strong><br><span style="color:#9ca3af;font-size:11px">verify-enabled</span></td>
+          <td><span class="method-badge POST">POST</span></td>
+          <td class="mono">/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail</td>
+          <td>
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">equals</span> <code>data.userState</code> &rarr; 1</div>
+            
+          </td>
+          <td>
+            <span style="color:#9ca3af">-</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 01 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;miId&quot;: 999000050,
+  &quot;email&quot;: &quot;test-agent-state-001@example.com&quot;,
+  &quot;name&quot;: &quot;测试岗位虾-状态&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;areaId&quot;: &quot;CN&quot;,
+  &quot;positions&quot;: [
+    {
+      &quot;positionId&quot;: 1,
+      &quot;privilegeState&quot;: 1,
+      &quot;relationType&quot;: 2
+    }
+  ]
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 02 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;userState&quot;: 0
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 03 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 04 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;,
+  &quot;userState&quot;: 1
+}</div>
+    </details>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step 05 请求体</summary>
+      <div class="body-block">{
+  &quot;agentId&quot;: &quot;${fixture:testAgentId}&quot;,
+  &quot;scene&quot;: &quot;new_retail_cn&quot;
+}</div>
+    </details>
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">version: &quot;2.0&quot;
+metadata:
+  id: update-state-001
+  name: &quot;启用禁用数字人状态&quot;
+  requirement: digital-user-management
+  author: test
+  created: &quot;2026-06-11&quot;
+  tags: [状态, 启用, 禁用, SMOKE]
+
+config:
+  baseUrl: &quot;${env:TC_BASE_URL}&quot;
+  cookieEnv: &quot;TC_COOKIE&quot;
+  headers:
+    content-type: &quot;application/json;charset&#x3D;UTF-8&quot;
+    group: &quot;staging&quot;
+    x-retail-locale: &quot;CN&quot;
+
+fixtures:
+  testAgentId: &quot;test-agent-state-001&quot;
+
+steps:
+  - id: create-first
+    name: &quot;先创建数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        miId: 999000050
+        email: &quot;test-agent-state-001@example.com&quot;
+        name: &quot;测试岗位虾-状态&quot;
+        scene: &quot;new_retail_cn&quot;
+        areaId: &quot;CN&quot;
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: disable
+    name: &quot;禁用数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        userState: 0
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: verify-disabled
+    name: &quot;验证禁用状态&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;data.userState&quot;
+          value: 0
+
+  - id: re-enable
+    name: &quot;重新启用数字人&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+        userState: 1
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;code&quot;
+          value: 0
+
+  - id: verify-enabled
+    name: &quot;验证启用状态&quot;
+    request:
+      method: POST
+      path: &quot;/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail&quot;
+      body:
+        agentId: &quot;${fixture:testAgentId}&quot;
+        scene: &quot;new_retail_cn&quot;
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: &quot;data.userState&quot;
+          value: 1
+</pre>
+  </div>
+</div>
+
+<div class="footer">Generated by @digital-user/api-test-framework | 2026-06-11</div>
+
+<script>
+function toggleBody(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.arrow');
+  body.classList.toggle('expanded');
+  arrow.classList.toggle('expanded');
+}
+function toggleRaw(btn) {
+  const pre = btn.nextElementSibling;
+  if (pre.style.display === 'none') {
+    pre.style.display = 'block';
+    btn.textContent = '隐藏原始 YAML';
+  } else {
+    pre.style.display = 'none';
+    btn.textContent = '显示原始 YAML';
+  }
+}
+</script>
+</body>
+</html>

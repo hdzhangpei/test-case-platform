@@ -1,0 +1,36 @@
+version: "2.0"
+metadata:
+  id: list-position-claws-001
+  name: "分页查询岗位虾列表（模糊搜索）"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [查询, 搜索, REGRESSION]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+steps:
+  - id: list-claws
+    name: "查询岗位虾列表"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/listPositionClaws"
+      body:
+        sceneList: ["new_retail_cn"]
+        pageNum: 1
+        pageSize: 10
+        areaId: "CN"
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "$"
+        - type: equals
+          target: "code"
+          value: 0

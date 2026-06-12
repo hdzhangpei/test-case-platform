@@ -1,0 +1,65 @@
+version: "2.0"
+metadata:
+  id: create-mapping-003
+  name: "创建数字人映射（异常流：跨领域校验）"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [创建, 异常流, EDGE_CASE]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  crossDomainAgentId: "test-agent-cross-001"
+
+steps:
+  - id: create-cn
+    name: "在国内场景创建"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:crossDomainAgentId}"
+        miId: 999000020
+        email: "test-agent-cross-001@example.com"
+        name: "测试岗位虾-跨领域"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: create-cross-domain
+    name: "跨领域创建（应失败）"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:crossDomainAgentId}"
+        miId: 999000020
+        email: "test-agent-cross-001@example.com"
+        name: "测试岗位虾-跨领域-国际"
+        scene: "new_retail"
+        areaId: "IN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "code"

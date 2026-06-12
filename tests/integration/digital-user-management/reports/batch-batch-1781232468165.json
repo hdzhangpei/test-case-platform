@@ -1,0 +1,450 @@
+{
+  "type": "batch",
+  "batchId": "batch-1781232468165",
+  "requirement": "digital-user-management",
+  "generated": "2026-06-12T02:47:49.136Z",
+  "total": 12,
+  "passed": 1,
+  "failed": 11,
+  "scenarios": [
+    {
+      "scenarioId": "123123",
+      "scenarioName": "啊是否打算的",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.168,
+      "steps": [
+        {
+          "id": "12312",
+          "name": "阿水淀粉",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/123123",
+          "status": "failed",
+          "duration": 0.168,
+          "requestBody": 123,
+          "responseBody": "Bucket Access Denied: Only owner is allowed to edit bucket property, region=staging-cnbj2, request-id=2ece833b-ad03-c41b-0000-019eb9ba81b3",
+          "errorMessage": "HTTP 状态码不符合预期：期望 200，实际 403"
+        }
+      ]
+    },
+    {
+      "scenarioId": "create-mapping-001",
+      "scenarioName": "创建数字人映射（正常流）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.2,
+      "steps": [
+        {
+          "id": "create",
+          "name": "创建数字人映射",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.2,
+          "requestBody": {
+            "agentId": "test-agent-auto-001",
+            "miId": 999000001,
+            "email": "test-agent-001@example.com",
+            "name": "测试岗位虾-001",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "create-mapping-002",
+      "scenarioName": "创建数字人映射（异常流：agentId重复）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.086,
+      "steps": [
+        {
+          "id": "first-create",
+          "name": "首次创建数字人映射",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.086,
+          "requestBody": {
+            "agentId": "test-agent-dup-001",
+            "miId": 999000010,
+            "email": "test-agent-dup-001@example.com",
+            "name": "测试岗位虾-dup",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "create-mapping-003",
+      "scenarioName": "创建数字人映射（异常流：跨领域校验）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.047,
+      "steps": [
+        {
+          "id": "create-cn",
+          "name": "在国内场景创建",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.047,
+          "requestBody": {
+            "agentId": "test-agent-cross-001",
+            "miId": 999000020,
+            "email": "test-agent-cross-001@example.com",
+            "name": "测试岗位虾-跨领域",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "crud-flow-001",
+      "scenarioName": "数字人完整CRUD流程",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.072,
+      "steps": [
+        {
+          "id": "create",
+          "name": "创建数字人映射",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.072,
+          "requestBody": {
+            "agentId": "test-agent-crud-001",
+            "miId": "999000099",
+            "email": "test-agent-crud-001@example.com",
+            "name": "测试岗位虾-CRUD",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "export-list-001",
+      "scenarioName": "导出数字人列表",
+      "status": "passed",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 0.059,
+      "steps": [
+        {
+          "id": "export-list",
+          "name": "导出数字人列表",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/exportDigitalUserList",
+          "status": "passed",
+          "httpStatus": 200,
+          "duration": 0.059,
+          "requestBody": {
+            "sceneList": [
+              "new_retail_cn"
+            ],
+            "areaId": "CN"
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          }
+        }
+      ]
+    },
+    {
+      "scenarioId": "get-detail-001",
+      "scenarioName": "查询数字人详情",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.075,
+      "steps": [
+        {
+          "id": "create-first",
+          "name": "先创建数字人",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.075,
+          "requestBody": {
+            "agentId": "test-agent-detail-001",
+            "miId": 9990000301,
+            "email": "test-agent-detail-001@example.com",
+            "name": "测试岗位虾-详情",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "get-log-001",
+      "scenarioName": "查询数字人操作日志",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.075,
+      "steps": [
+        {
+          "id": "create-first",
+          "name": "先创建数字人（产生操作日志）",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.075,
+          "requestBody": {
+            "agentId": "test-agent-log-001",
+            "miId": 999000060,
+            "email": "test-agent-log-001@example.com",
+            "name": "测试岗位虾-日志",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "list-position-claws-001",
+      "scenarioName": "分页查询岗位虾列表（模糊搜索）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.032,
+      "steps": [
+        {
+          "id": "list-claws",
+          "name": "查询岗位虾列表",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/listPositionClaws",
+          "status": "failed",
+          "duration": 0.032,
+          "requestBody": {
+            "sceneList": [
+              "new_retail_cn"
+            ],
+            "pageNum": 1,
+            "pageSize": 10,
+            "areaId": "CN"
+          },
+          "responseBody": {
+            "code": 404,
+            "message": "Not Found",
+            "detailMsg": "apiInfo is null"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 404"
+        }
+      ]
+    },
+    {
+      "scenarioId": "page-list-001",
+      "scenarioName": "分页查询数字人列表",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.051,
+      "steps": [
+        {
+          "id": "query-list",
+          "name": "分页查询数字人列表",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/pageDigitalUserList",
+          "status": "failed",
+          "duration": 0.051,
+          "requestBody": {
+            "sceneList": [
+              "new_retail_cn"
+            ],
+            "pageNum": 1,
+            "pageSize": 20,
+            "areaId": "CN"
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "update-mapping-001",
+      "scenarioName": "编辑数字人映射",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.048,
+      "steps": [
+        {
+          "id": "create-first",
+          "name": "先创建数字人",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.048,
+          "requestBody": {
+            "agentId": "test-agent-update-001",
+            "miId": 999000040,
+            "email": "test-agent-update-001@example.com",
+            "name": "测试岗位虾-编辑前",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    },
+    {
+      "scenarioId": "update-state-001",
+      "scenarioName": "启用禁用数字人状态",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.049,
+      "steps": [
+        {
+          "id": "create-first",
+          "name": "先创建数字人",
+          "method": "POST",
+          "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+          "status": "failed",
+          "duration": 0.049,
+          "requestBody": {
+            "agentId": "test-agent-state-001",
+            "miId": 999000050,
+            "email": "test-agent-state-001@example.com",
+            "name": "测试岗位虾-状态",
+            "scene": "new_retail_cn",
+            "areaId": "CN",
+            "positions": [
+              {
+                "positionId": 1,
+                "privilegeState": 1,
+                "relationType": 2
+              }
+            ]
+          },
+          "responseBody": {
+            "code": 500,
+            "message": "系统繁忙，请稍后重试",
+            "detailMsg": "failed to get dubbo response"
+          },
+          "errorMessage": "断言失败：code 期望 0，实际 500"
+        }
+      ]
+    }
+  ]
+}

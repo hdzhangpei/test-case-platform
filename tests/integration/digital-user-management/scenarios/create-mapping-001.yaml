@@ -1,0 +1,42 @@
+version: "2.0"
+metadata:
+  id: create-mapping-001
+  name: 创建数字人映射（正常流）
+  requirement: digital-user-management
+  author: test
+  created: 2026-06-11
+  tags:
+    - 创建
+    - SMOKE
+config:
+  baseUrl: ${env:TC_BASE_URL}
+  cookieEnv: TC_COOKIE
+  headers:
+    content-type: application/json;charset=UTF-8
+    group: staging
+    x-retail-locale: CN
+steps:
+  - id: create
+    name: 创建数字人映射
+    request:
+      method: POST
+      path: /mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping
+      body:
+        agentId: test-agent-auto-001
+        miId: 999000001
+        email: test-agent-001@example.com
+        name: 测试岗位虾-001
+        scene: new_retail_cn
+        areaId: CN
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: code
+          value: 0
+    capture:
+      createdAgentId: data.agentId

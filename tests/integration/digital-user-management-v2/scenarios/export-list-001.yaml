@@ -1,0 +1,31 @@
+version: "2.0"
+metadata:
+  id: export-list-001
+  name: "导出数字人列表"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [导出, REGRESSION]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+steps:
+  - id: export-list
+    name: "导出数字人列表"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/exportDigitalUserList"
+      body:
+        sceneList: ["new_retail_cn"]
+        areaId: "CN"
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "$"

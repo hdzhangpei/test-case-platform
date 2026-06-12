@@ -1,0 +1,136 @@
+version: "2.0"
+metadata:
+  id: crud-flow-001
+  name: "数字人完整CRUD流程"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [CRUD, 全流程, SMOKE]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  testAgentId: "test-agent-crud-001"
+  testMiId: 999000099
+  testEmail: "test-agent-crud-001@example.com"
+
+steps:
+  - id: create
+    name: "创建数字人映射"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:testAgentId}"
+        miId: "${fixture:testMiId}"
+        email: "${fixture:testEmail}"
+        name: "测试岗位虾-CRUD"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: query-after-create
+    name: "查询刚创建的数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "data"
+        - type: equals
+          target: "data.agentId"
+          value: "${fixture:testAgentId}"
+        - type: equals
+          target: "data.name"
+          value: "测试岗位虾-CRUD"
+    capture:
+      createdAgentId: "data.agentId"
+
+  - id: update
+    name: "编辑数字人（改名+增加岗位）"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping"
+      body:
+        agentId: "${capture:createdAgentId}"
+        scene: "new_retail_cn"
+        name: "测试岗位虾-CRUD-已编辑"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+          - positionId: 2
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: verify-update
+    name: "验证编辑结果"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${capture:createdAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "data.name"
+          value: "测试岗位虾-CRUD-已编辑"
+
+  - id: disable
+    name: "禁用数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState"
+      body:
+        agentId: "${capture:createdAgentId}"
+        scene: "new_retail_cn"
+        userState: 0
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: verify-disabled
+    name: "验证禁用后状态"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${capture:createdAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "data.userState"
+          value: 0

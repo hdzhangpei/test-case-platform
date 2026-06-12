@@ -1,0 +1,44 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "crud-flow-001",
+  "scenarioName": "数字人完整CRUD流程",
+  "generated": "2026-06-12T01-38-40-012Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.05
+  },
+  "steps": [
+    {
+      "id": "create",
+      "name": "创建数字人映射",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+      "status": "failed",
+      "duration": 0.05,
+      "requestBody": {
+        "agentId": "test-agent-crud-001",
+        "miId": "999000099",
+        "email": "test-agent-crud-001@example.com",
+        "name": "测试岗位虾-CRUD",
+        "scene": "new_retail_cn",
+        "areaId": "CN",
+        "positions": [
+          {
+            "positionId": 1,
+            "privilegeState": 1,
+            "relationType": 2
+          }
+        ]
+      },
+      "responseBody": {
+        "code": 500,
+        "message": "系统繁忙，请稍后重试",
+        "detailMsg": "failed to get dubbo response"
+      },
+      "errorMessage": "断言失败：code 期望 0，实际 500"
+    }
+  ]
+}

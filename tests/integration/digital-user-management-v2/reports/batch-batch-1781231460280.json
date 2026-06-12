@@ -1,0 +1,110 @@
+{
+  "type": "batch",
+  "batchId": "batch-1781231460280",
+  "requirement": "digital-user-management-v2",
+  "generated": "2026-06-12T02:31:00.947Z",
+  "total": 11,
+  "passed": 1,
+  "failed": 10,
+  "scenarios": [
+    {
+      "scenarioId": "create-mapping-001",
+      "scenarioName": "创建数字人映射（正常流）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.13
+    },
+    {
+      "scenarioId": "create-mapping-002",
+      "scenarioName": "创建数字人映射（异常流：agentId重复）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.097
+    },
+    {
+      "scenarioId": "create-mapping-003",
+      "scenarioName": "创建数字人映射（异常流：跨领域校验）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.051
+    },
+    {
+      "scenarioId": "crud-flow-001",
+      "scenarioName": "数字人完整CRUD流程",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.072
+    },
+    {
+      "scenarioId": "export-list-001",
+      "scenarioName": "导出数字人列表",
+      "status": "passed",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "duration": 0.041
+    },
+    {
+      "scenarioId": "get-detail-001",
+      "scenarioName": "查询数字人详情",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.043
+    },
+    {
+      "scenarioId": "get-log-001",
+      "scenarioName": "查询数字人操作日志",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.042
+    },
+    {
+      "scenarioId": "list-position-claws-001",
+      "scenarioName": "分页查询岗位虾列表（模糊搜索）",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.037
+    },
+    {
+      "scenarioId": "page-list-001",
+      "scenarioName": "分页查询数字人列表",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.063
+    },
+    {
+      "scenarioId": "update-mapping-001",
+      "scenarioName": "编辑数字人映射",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.044
+    },
+    {
+      "scenarioId": "update-state-001",
+      "scenarioName": "启用禁用数字人状态",
+      "status": "failed",
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration": 0.039
+    }
+  ]
+}

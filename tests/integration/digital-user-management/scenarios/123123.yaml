@@ -1,0 +1,26 @@
+version: "2.0"
+metadata:
+  id: "123123"
+  name: 啊是否打算的
+  requirement: digital-user-management
+  author: web
+  created: 2026-06-12
+  tags:
+    - 测试
+config:
+  baseUrl: ${env:TC_BASE_URL}
+  cookieEnv: TC_COOKIE
+  headers:
+    content-type: application/json;charset=UTF-8
+    group: staging
+    x-retail-locale: CN
+steps:
+  - id: "12312"
+    name: 阿水淀粉
+    request:
+      method: POST
+      path: /123123
+      body: 123
+    expected:
+      status: 200
+      assertions: 123

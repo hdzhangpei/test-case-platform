@@ -1,0 +1,62 @@
+version: "2.0"
+metadata:
+  id: get-log-001
+  name: "查询数字人操作日志"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [日志, 查询, REGRESSION]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  testAgentId: "test-agent-log-001"
+
+steps:
+  - id: create-first
+    name: "先创建数字人（产生操作日志）"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:testAgentId}"
+        miId: 999000060
+        email: "test-agent-log-001@example.com"
+        name: "测试岗位虾-日志"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: query-log
+    name: "查询操作日志"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserLog"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+        pageNum: 1
+        pageSize: 20
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "data"
+        - type: greater_than
+          target: "data.total"
+          value: 0

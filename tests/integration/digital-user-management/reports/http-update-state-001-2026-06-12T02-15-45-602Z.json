@@ -1,0 +1,44 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "update-state-001",
+  "scenarioName": "启用禁用数字人状态",
+  "generated": "2026-06-12T02-15-45-602Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.05
+  },
+  "steps": [
+    {
+      "id": "create-first",
+      "name": "先创建数字人",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+      "status": "failed",
+      "duration": 0.05,
+      "requestBody": {
+        "agentId": "test-agent-state-001",
+        "miId": 999000050,
+        "email": "test-agent-state-001@example.com",
+        "name": "测试岗位虾-状态",
+        "scene": "new_retail_cn",
+        "areaId": "CN",
+        "positions": [
+          {
+            "positionId": 1,
+            "privilegeState": 1,
+            "relationType": 2
+          }
+        ]
+      },
+      "responseBody": {
+        "code": 500,
+        "message": "系统繁忙，请稍后重试",
+        "detailMsg": "failed to get dubbo response"
+      },
+      "errorMessage": "断言失败：code 期望 0，实际 500"
+    }
+  ]
+}

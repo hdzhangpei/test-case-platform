@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP 场景审查 - {{requirement}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; padding: 24px; }
+.header { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.header h1 { font-size: 22px; margin-bottom: 8px; }
+.header .meta { color: #666; font-size: 14px; }
+.summary { display: flex; gap: 16px; margin: 16px 0; }
+.summary-card { background: #fff; border-radius: 8px; padding: 16px 24px; flex: 1; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.summary-card .number { font-size: 28px; font-weight: bold; }
+.summary-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.summary-card.total .number { color: #333; }
+.summary-card.ok .number { color: #22c55e; }
+.summary-card.bad .number { color: #ef4444; }
+.scenario-card { background: #fff; border-radius: 8px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+.scenario-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; }
+.scenario-header:hover { background: #f9fafb; }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.ok { background: #22c55e; }
+.status-dot.bad { background: #ef4444; }
+.scenario-title { flex: 1; font-weight: 600; font-size: 15px; }
+.scenario-id { font-family: monospace; font-size: 13px; color: #6b7280; }
+.scenario-meta { font-size: 12px; color: #9ca3af; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; background: #f0f9ff; color: #0369a1; }
+.arrow { transition: transform 0.2s; display: inline-block; margin-right: 4px; color: #9ca3af; }
+.arrow.expanded { transform: rotate(90deg); }
+.scenario-body { display: none; padding: 0 20px 20px; border-top: 1px solid #f3f4f6; }
+.scenario-body.expanded { display: block; }
+.error-list { margin-top: 12px; padding: 10px 14px; background: #fef2f2; color: #dc2626; border-radius: 6px; font-size: 13px; }
+.error-list li { margin-left: 16px; margin-bottom: 4px; }
+.flow-chart { display: flex; align-items: center; gap: 0; margin: 16px 0; overflow-x: auto; padding: 8px 0; }
+.flow-step { display: flex; flex-direction: column; align-items: center; min-width: 100px; padding: 8px 12px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; position: relative; }
+.flow-step .step-num { font-size: 11px; color: #0369a1; font-weight: 600; }
+.flow-step .step-name { font-size: 12px; text-align: center; margin-top: 4px; line-height: 1.3; }
+.flow-step .step-method { font-size: 10px; color: #6b7280; margin-top: 2px; }
+.flow-arrow { display: flex; align-items: center; color: #94a3b8; font-size: 18px; margin: 0 4px; flex-shrink: 0; }
+.step-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+.step-table th { background: #f9fafb; text-align: left; padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 500; }
+.step-table td { padding: 8px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+.step-table td.mono { font-family: monospace; font-size: 12px; word-break: break-all; }
+.method-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 600; font-family: monospace; }
+.method-badge.POST { background: #dbeafe; color: #1d4ed8; }
+.method-badge.GET { background: #dcfce7; color: #166534; }
+.method-badge.PUT { background: #fef9c3; color: #a16207; }
+.method-badge.DELETE { background: #fef2f2; color: #dc2626; }
+.method-badge.PATCH { background: #f3e8ff; color: #7c3aed; }
+.capture-tag { display: inline-block; padding: 1px 6px; background: #ede9fe; color: #6d28d9; border-radius: 3px; font-size: 11px; font-family: monospace; }
+.body-block { background: #1e293b; color: #e2e8f0; padding: 10px 14px; border-radius: 6px; font-size: 12px; font-family: monospace; white-space: pre-wrap; max-height: 200px; overflow-y: auto; margin-top: 4px; }
+.toggle-raw { font-size: 12px; color: #6b7280; cursor: pointer; margin-top: 8px; display: inline-block; }
+.toggle-raw:hover { color: #3b82f6; }
+pre.yaml-raw { background: #1e293b; color: #e2e8f0; padding: 12px 16px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin-top: 8px; max-height: 400px; overflow-y: auto; }
+.footer { margin-top: 24px; text-align: center; color: #9ca3af; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>HTTP 场景审查</h1>
+  <div class="meta">
+    需求: <strong>{{requirement}}</strong> | 生成时间: {{generated}} | 共 {{totalScenarios}} 个场景，{{totalSteps}} 个步骤
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card total"><div class="number">{{totalScenarios}}</div><div class="label">场景总数</div></div>
+  <div class="summary-card ok"><div class="number">{{passedCount}}</div><div class="label">校验通过</div></div>
+  <div class="summary-card bad"><div class="number">{{failedCount}}</div><div class="label">校验失败</div></div>
+</div>
+
+{{#each scenarios}}
+<div class="scenario-card">
+  <div class="scenario-header" onclick="toggleBody(this)">
+    <span class="arrow">&#9654;</span>
+    <span class="status-dot {{statusClass}}"></span>
+    <span class="scenario-title">{{name}}</span>
+    <span class="scenario-id">{{id}}</span>
+    <span class="badge">{{stepCount}} 步骤</span>
+    <span class="scenario-meta">{{statusLabel}}</span>
+  </div>
+  <div class="scenario-body">
+    {{#if errors}}
+    <div class="error-list">
+      <strong>校验错误:</strong>
+      <ul>{{#each errors}}<li>[{{layer}}] {{path}}: {{message}}</li>{{/each}}</ul>
+    </div>
+    {{/if}}
+
+    <div class="flow-chart">
+      {{#each steps}}
+      <div class="flow-step">
+        <span class="step-num">{{displayIndex}}</span>
+        <span class="step-name">{{name}}</span>
+        <span class="step-method"><span class="method-badge {{method}}">{{method}}</span></span>
+      </div>
+      {{#unless @last}}<div class="flow-arrow">&#8594;</div>{{/unless}}
+      {{/each}}
+    </div>
+
+    <table class="step-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th style="width:140px">步骤</th>
+          <th style="width:70px">方法</th>
+          <th>路径</th>
+          <th>断言</th>
+          <th>捕获</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each steps}}
+        <tr>
+          <td>{{displayIndex}}</td>
+          <td><strong>{{name}}</strong><br><span style="color:#9ca3af;font-size:11px">{{id}}</span></td>
+          <td><span class="method-badge {{method}}">{{method}}</span></td>
+          <td class="mono">{{path}}</td>
+          <td>
+            {{#each assertions}}
+              <div><span class="badge" style="background:#f0fdf4;color:#166534">{{type}}</span> <code>{{target}}</code> {{#if valueText}}&rarr; {{valueText}}{{/if}}</div>
+            {{/each}}
+            {{#unless assertions}}<span style="color:#9ca3af">-</span>{{/unless}}
+          </td>
+          <td>
+            {{#each captures}}
+              <div><span class="capture-tag">{{name}}</span> &larr; <code>{{path}}</code></div>
+            {{/each}}
+            {{#unless captures}}<span style="color:#9ca3af">-</span>{{/unless}}
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    {{#each steps}}
+    {{#if bodyJson}}
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;font-size:13px;color:#6b7280">Step {{displayIndex}} 请求体</summary>
+      <div class="body-block">{{bodyJson}}</div>
+    </details>
+    {{/if}}
+    {{/each}}
+
+    <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
+    <pre class="yaml-raw" style="display:none">{{raw}}</pre>
+  </div>
+</div>
+{{/each}}
+
+<div class="footer">Generated by @digital-user/api-test-framework | {{generated}}</div>
+
+<script>
+function toggleBody(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.arrow');
+  body.classList.toggle('expanded');
+  arrow.classList.toggle('expanded');
+}
+function toggleRaw(btn) {
+  const pre = btn.nextElementSibling;
+  if (pre.style.display === 'none') {
+    pre.style.display = 'block';
+    btn.textContent = '隐藏原始 YAML';
+  } else {
+    pre.style.display = 'none';
+    btn.textContent = '显示原始 YAML';
+  }
+}
+</script>
+</body>
+</html>

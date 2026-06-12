@@ -1,0 +1,14 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "123123",
+  "scenarioName": "啊是否打算的",
+  "generated": "2026-06-12T02-21-30-374Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "duration": 0
+  },
+  "steps": []
+}

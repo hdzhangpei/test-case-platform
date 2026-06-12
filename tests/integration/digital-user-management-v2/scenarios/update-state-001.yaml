@@ -1,0 +1,105 @@
+version: "2.0"
+metadata:
+  id: update-state-001
+  name: "启用禁用数字人状态"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [状态, 启用, 禁用, SMOKE]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  testAgentId: "test-agent-state-001"
+
+steps:
+  - id: create-first
+    name: "先创建数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:testAgentId}"
+        miId: 999000050
+        email: "test-agent-state-001@example.com"
+        name: "测试岗位虾-状态"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: disable
+    name: "禁用数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+        userState: 0
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: verify-disabled
+    name: "验证禁用状态"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "data.userState"
+          value: 0
+
+  - id: re-enable
+    name: "重新启用数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/updateDigitalUserState"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+        userState: 1
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: verify-enabled
+    name: "验证启用状态"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "data.userState"
+          value: 1

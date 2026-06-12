@@ -1,0 +1,81 @@
+version: "2.0"
+metadata:
+  id: update-mapping-001
+  name: "编辑数字人映射"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [编辑, SMOKE]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  testAgentId: "test-agent-update-001"
+
+steps:
+  - id: create-first
+    name: "先创建数字人"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:testAgentId}"
+        miId: 999000040
+        email: "test-agent-update-001@example.com"
+        name: "测试岗位虾-编辑前"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: update-mapping
+    name: "编辑数字人映射（增加岗位）"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/updateDigitalUserMapping"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+        name: "测试岗位虾-编辑后"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+          - positionId: 2
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: verify-update
+    name: "验证编辑结果"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail"
+      body:
+        agentId: "${fixture:testAgentId}"
+        scene: "new_retail_cn"
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "data.name"
+          value: "测试岗位虾-编辑后"

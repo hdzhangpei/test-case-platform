@@ -1,0 +1,65 @@
+version: "2.0"
+metadata:
+  id: create-mapping-002
+  name: "创建数字人映射（异常流：agentId重复）"
+  requirement: digital-user-management
+  author: test
+  created: "2026-06-11"
+  tags: [创建, 异常流, EDGE_CASE]
+
+config:
+  baseUrl: "${env:TC_BASE_URL}"
+  cookieEnv: "TC_COOKIE"
+  headers:
+    content-type: "application/json;charset=UTF-8"
+    group: "staging"
+    x-retail-locale: "CN"
+
+fixtures:
+  duplicateAgentId: "test-agent-dup-001"
+
+steps:
+  - id: first-create
+    name: "首次创建数字人映射"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:duplicateAgentId}"
+        miId: 999000010
+        email: "test-agent-dup-001@example.com"
+        name: "测试岗位虾-dup"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: "code"
+          value: 0
+
+  - id: duplicate-create
+    name: "重复创建（应失败）"
+    request:
+      method: POST
+      path: "/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping"
+      body:
+        agentId: "${fixture:duplicateAgentId}"
+        miId: 999000011
+        email: "test-agent-dup-002@example.com"
+        name: "测试岗位虾-dup-重复"
+        scene: "new_retail_cn"
+        areaId: "CN"
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: "code"

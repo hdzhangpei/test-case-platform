@@ -1,0 +1,35 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "export-list-001",
+  "scenarioName": "导出数字人列表",
+  "generated": "2026-06-12T02-15-35-085Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "duration": 0.045
+  },
+  "steps": [
+    {
+      "id": "export-list",
+      "name": "导出数字人列表",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/exportDigitalUserList",
+      "status": "passed",
+      "httpStatus": 200,
+      "duration": 0.045,
+      "requestBody": {
+        "sceneList": [
+          "new_retail_cn"
+        ],
+        "areaId": "CN"
+      },
+      "responseBody": {
+        "code": 500,
+        "message": "系统繁忙，请稍后重试",
+        "detailMsg": "failed to get dubbo response"
+      }
+    }
+  ]
+}

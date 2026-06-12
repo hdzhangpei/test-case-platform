@@ -1,0 +1,37 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "list-position-claws-001",
+  "scenarioName": "分页查询岗位虾列表（模糊搜索）",
+  "generated": "2026-06-12T01-48-38-468Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.045
+  },
+  "steps": [
+    {
+      "id": "list-claws",
+      "name": "查询岗位虾列表",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/listPositionClaws",
+      "status": "failed",
+      "duration": 0.045,
+      "requestBody": {
+        "sceneList": [
+          "new_retail_cn"
+        ],
+        "pageNum": 1,
+        "pageSize": 10,
+        "areaId": "CN"
+      },
+      "responseBody": {
+        "code": 404,
+        "message": "Not Found",
+        "detailMsg": "apiInfo is null"
+      },
+      "errorMessage": "断言失败：code 期望 0，实际 404"
+    }
+  ]
+}

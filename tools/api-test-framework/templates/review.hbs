@@ -3,310 +3,977 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>API 测试用例审查 - {{requirement}}</title>
+<title>测试用例平台</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; padding: 24px; }
-.header { background: #fff; border-radius: 8px; padding: 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.header h1 { font-size: 22px; margin-bottom: 8px; }
-.header .meta { color: #666; font-size: 14px; }
-.summary { display: flex; gap: 16px; margin: 16px 0; }
-.summary-card { background: #fff; border-radius: 8px; padding: 16px 24px; flex: 1; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.summary-card .number { font-size: 28px; font-weight: bold; }
-.summary-card .label { font-size: 12px; color: #666; margin-top: 4px; }
-.summary-card.total .number { color: #333; }
-.summary-card.pass .number { color: #22c55e; }
-.summary-card.warning .number { color: #f59e0b; }
-.summary-card.fail .number { color: #ef4444; }
-.case-list { margin-top: 16px; }
-.case-item { background: #fff; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
-.case-header { padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background 0.2s; }
-.case-header:hover { background: #f9fafb; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.pass { background: #22c55e; }
-.status-dot.warning { background: #f59e0b; }
-.status-dot.fail { background: #ef4444; }
-.case-id { font-family: monospace; font-size: 13px; color: #6b7280; min-width: 180px; }
-.case-name-display { flex: 1; font-weight: 500; }
-.badges { display: flex; gap: 6px; }
-.badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
-.badge.p0 { background: #fef2f2; color: #dc2626; }
-.badge.p1 { background: #fef9c3; color: #a16207; }
-.badge.p2 { background: #f0f9ff; color: #0369a1; }
-.badge.smoke { background: #ecfdf5; color: #059669; }
-.badge.regression { background: #f5f3ff; color: #7c3aed; }
-.badge.edge_case { background: #fff7ed; color: #c2410c; }
-.case-detail { display: none; padding: 0 20px 20px; border-top: 1px solid #f3f4f6; }
-.case-detail.expanded { display: block; }
-.detail-section { margin-top: 16px; }
-.detail-section h4 { font-size: 13px; color: #6b7280; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-.detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.detail-table th { background: #f9fafb; text-align: left; padding: 8px 12px; border: 1px solid #e5e7eb; font-weight: 500; }
-.detail-table td { padding: 8px 12px; border: 1px solid #e5e7eb; }
-.detail-table td.field { font-family: monospace; }
-.detail-table input, .detail-table select { width: 100%; padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; font-family: monospace; }
-.detail-table input:focus, .detail-table select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
-.meta-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.meta-row label { font-size: 12px; color: #6b7280; }
-.meta-row input, .meta-row select { padding: 4px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; }
-.meta-row input { width: 200px; }
-.error-list, .warning-list { margin-top: 8px; padding: 8px 12px; border-radius: 4px; font-size: 13px; }
-.error-list { background: #fef2f2; color: #dc2626; }
-.warning-list { background: #fef9c3; color: #92400e; }
-.error-list li, .warning-list li { margin-left: 16px; margin-bottom: 4px; }
-.btn-save { margin-top: 16px; padding: 8px 20px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
-.btn-save:hover { background: #2563eb; }
-.btn-save:disabled { background: #9ca3af; cursor: not-allowed; }
-.save-status { display: inline-block; margin-left: 12px; font-size: 13px; }
-.save-status.success { color: #22c55e; }
-.save-status.error { color: #ef4444; }
-.toggle-raw { font-size: 12px; color: #6b7280; cursor: pointer; margin-top: 12px; display: inline-block; }
-.toggle-raw:hover { color: #3b82f6; }
-pre.yaml-raw { background: #1e293b; color: #e2e8f0; padding: 12px 16px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin-top: 8px; max-height: 400px; overflow-y: auto; }
-.arrow { transition: transform 0.2s; display: inline-block; margin-right: 4px; }
-.arrow.expanded { transform: rotate(90deg); }
-.footer { margin-top: 24px; text-align: center; color: #9ca3af; font-size: 12px; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f7fa;color:#333;font-size:14px}
+a{color:#3b82f6;text-decoration:none}a:hover{text-decoration:underline}
+.nav{background:#1e293b;color:#fff;padding:0 24px;display:flex;align-items:center;height:48px;position:sticky;top:0;z-index:100;gap:0}
+.nav h1{font-size:15px;font-weight:600;margin-right:8px;white-space:nowrap}
+.nav select{background:#334155;color:#e2e8f0;border:1px solid #475569;border-radius:4px;padding:4px 10px;font-size:13px;cursor:pointer;margin-left:auto}
+.nav select:focus{outline:none;border-color:#3b82f6}
+.nav .nav-links{display:flex;gap:2px;height:100%;margin-left:20px}
+.nav .nav-links a{color:#94a3b8;font-size:13px;cursor:pointer;padding:0 14px;display:flex;align-items:center;height:100%;border-radius:6px 6px 0 0;transition:all 0.15s;white-space:nowrap;position:relative}
+.nav .nav-links a:hover{color:#e2e8f0;background:rgba(255,255,255,0.08);text-decoration:none}
+.nav .nav-links a.active{color:#fff;background:rgba(255,255,255,0.1);text-decoration:none}
+.nav .nav-links a.active::after{content:'';position:absolute;bottom:0;left:8px;right:8px;height:2px;background:#3b82f6;border-radius:1px}
+.container{padding:24px}
+.card{background:#fff;border-radius:8px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.card h3{font-size:15px;margin-bottom:12px;color:#1e293b}
+.summary{display:flex;gap:12px;margin-bottom:20px}
+.summary-card{background:#fff;border-radius:8px;padding:16px 20px;flex:1;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.summary-card .num{font-size:28px;font-weight:700}.summary-card .lbl{font-size:12px;color:#6b7280;margin-top:4px}
+.num-total{color:#1e293b}.num-pass{color:#22c55e}.num-fail{color:#ef4444}
+.scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.scenario-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;cursor:pointer;transition:all 0.15s}
+.scenario-card:hover{border-color:#3b82f6;box-shadow:0 2px 8px rgba(59,130,246,0.12)}
+.scenario-card .sc-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.scenario-card .sc-name{font-weight:600;font-size:14px;flex:1}
+.scenario-card .sc-meta{font-size:12px;color:#9ca3af;display:flex;gap:12px;margin-bottom:8px}
+.scenario-card .sc-steps{display:flex;gap:4px;flex-wrap:wrap}
+.scenario-card .sc-step{font-size:11px;padding:2px 6px;background:#f0f9ff;color:#0369a1;border-radius:4px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.pass{background:#22c55e}.status-dot.fail{background:#ef4444}.status-dot.warning{background:#f59e0b}
+.badge{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+.badge.pass{background:#dcfce7;color:#166534}.badge.fail{background:#fef2f2;color:#991b1b}.badge.warning{background:#fef9c3;color:#92400e}
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:#3b82f6;color:#fff}.btn-primary:hover{background:#2563eb}.btn-primary:disabled{background:#9ca3af;cursor:not-allowed}
+.btn-success{background:#22c55e;color:#fff}.btn-success:hover{background:#16a34a}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-outline{background:#fff;color:#374151;border:1px solid #d1d5db}.btn-outline:hover{background:#f9fafb}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-group{display:flex;gap:8px;margin-top:12px}
+.hidden{display:none}
+.back-link{font-size:13px;color:#6b7280;cursor:pointer;margin-bottom:16px;display:inline-block}
+.back-link:hover{color:#3b82f6}
+.flow{display:flex;align-items:center;gap:0;margin:16px 0;overflow-x:auto;padding:8px 0}
+.flow-node{display:flex;flex-direction:column;align-items:center;min-width:110px;padding:10px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;cursor:pointer;transition:all 0.15s}
+.flow-node:hover{background:#dbeafe;border-color:#3b82f6}
+.flow-node .fn-num{font-size:11px;color:#0369a1;font-weight:600}
+.flow-node .fn-name{font-size:12px;text-align:center;margin-top:4px;line-height:1.3;max-width:120px}
+.flow-node .fn-method{font-size:10px;color:#6b7280;margin-top:2px}
+.flow-arrow{display:flex;align-items:center;color:#cbd5e1;font-size:20px;margin:0 6px;flex-shrink:0}
+.method-tag{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;font-family:monospace}
+.method-tag.POST{background:#dbeafe;color:#1d4ed8}.method-tag.GET{background:#dcfce7;color:#166534}.method-tag.PUT{background:#fef9c3;color:#a16207}.method-tag.DELETE{background:#fef2f2;color:#dc2626}
+.step-detail{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.step-header{padding:12px 16px;background:#f9fafb;display:flex;align-items:center;gap:10px;cursor:pointer}
+.step-header:hover{background:#f3f4f6}
+.step-body{padding:16px;display:none}.step-body.expanded{display:block}
+.step-field{margin-bottom:12px}
+.step-field label{display:block;font-size:12px;color:#6b7280;margin-bottom:4px;font-weight:500}
+.step-field input,.step-field textarea,.step-field select{width:100%;padding:6px 10px;border:1px solid #d1d5db;border-radius:4px;font-size:13px;font-family:monospace}
+.step-field input:focus,.step-field textarea:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.15)}
+.step-field textarea{min-height:80px;resize:vertical}
+.json-view{background:#1e293b;color:#e2e8f0;padding:12px 16px;border-radius:6px;font-size:12px;font-family:monospace;white-space:pre-wrap;max-height:300px;overflow-y:auto}
+.capture-highlight{display:inline-block;padding:1px 6px;background:#ede9fe;color:#6d28d9;border-radius:3px;font-size:12px;font-family:monospace}
+.run-progress{margin:16px 0}
+.progress-bar{height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;border-radius:4px;transition:width 0.3s;background:#3b82f6}
+.progress-fill.done{background:#22c55e}.progress-fill.error{background:#ef4444}
+.step-result{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:8px}
+.step-result.passed{border-color:#bbf7d0;background:#f0fdf4}.step-result.failed{border-color:#fecaca;background:#fef2f2}
+.step-result .sr-status{font-size:16px}.step-result .sr-name{flex:1;font-weight:500}
+.step-result .sr-duration{font-size:12px;color:#9ca3af;font-family:monospace}
+.error-msg{margin-top:8px;padding:10px 14px;background:#fef2f2;border-radius:4px;font-size:13px;color:#991b1b}
+.req-resp-toggle{font-size:12px;color:#6b7280;cursor:pointer;margin-top:6px}.req-resp-toggle:hover{color:#3b82f6}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}
+.report-table th{background:#f9fafb;text-align:left;padding:10px 12px;border-bottom:1px solid #e5e7eb;font-weight:600}
+.report-table td{padding:10px 12px;border-bottom:1px solid #f3f4f6}
+.report-table tr:hover td{background:#f9fafb}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{background:#f9fafb;text-align:left;padding:8px 12px;border:1px solid #e5e7eb;font-weight:500}
+.table td{padding:8px 12px;border:1px solid #e5e7eb}
+.footer{margin-top:32px;text-align:center;color:#9ca3af;font-size:12px;padding:16px}
+.toast{position:fixed;top:60px;right:24px;padding:10px 20px;border-radius:6px;font-size:13px;z-index:200;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}.toast.success{background:#dcfce7;color:#166534}.toast.error{background:#fef2f2;color:#991b1b}
+.add-step-form{border:2px dashed #d1d5db;border-radius:8px;padding:16px;margin-top:12px;background:#fafafa}
+.add-step-form .form-row{display:grid;grid-template-columns:120px 1fr;gap:8px;margin-bottom:8px;align-items:center}
+.add-step-form .form-row label{font-size:12px;color:#6b7280;text-align:right}
+.batch-status{background:#fff;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.batch-status .bs-title{font-weight:600;margin-bottom:8px}
+.batch-status .bs-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px}
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>API 测试用例审查</h1>
-  <div class="meta">
-    需求: <strong>{{requirement}}</strong> | 生成时间: {{generated}} | 共 {{totalCases}} 个用例
+<div class="nav">
+  <h1>测试用例平台</h1>
+  <div class="nav-links">
+    <a onclick="navigate('dashboard')" id="nav-dashboard" class="active">仪表盘</a>
+    <a onclick="navigate('reports')" id="nav-reports">历史报告</a>
   </div>
+  <select id="req-selector" onchange="switchRequirement(this.value)">
+    {{#each requirements}}
+    <option value="{{id}}">{{name}}</option>
+    {{/each}}
+  </select>
 </div>
 
-<div class="summary">
-  <div class="summary-card total"><div class="number">{{totalCases}}</div><div class="label">总计</div></div>
-  <div class="summary-card pass"><div class="number">{{passedCount}}</div><div class="label">校验通过</div></div>
-  <div class="summary-card warning"><div class="number">{{warningCount}}</div><div class="label">有警告</div></div>
-  <div class="summary-card fail"><div class="number">{{failedCount}}</div><div class="label">校验失败</div></div>
-</div>
+<div id="toast" class="toast"></div>
 
-<div class="case-list">
-  {{#each cases}}
-  <div class="case-item" data-case-id="{{id}}" data-case-json="{{{escapeAttr dataJson}}}">
-    <div class="case-header" onclick="toggleDetail(this)">
-      <span class="arrow">&#9654;</span>
-      <span class="status-dot {{status}}"></span>
-      <span class="case-id">{{id}}</span>
-      <span class="case-name-display">{{name}}</span>
-      <div class="badges">
-        <span class="badge {{lowercase priority}}">{{priority}}</span>
-        <span class="badge {{lowercase group}}">{{group}}</span>
+<div class="container">
+
+<!-- Dashboard -->
+<div id="view-dashboard">
+  <div class="summary">
+    <div class="summary-card"><div class="num num-total">{{totalScenarios}}</div><div class="lbl">场景数</div></div>
+    <div class="summary-card"><div class="num num-total">{{totalSteps}}</div><div class="lbl">总步骤</div></div>
+  </div>
+
+  <div id="batch-panel" class="hidden batch-status">
+    <div class="bs-title" id="batch-title">批量执行中...</div>
+    <div class="run-progress">
+      <div class="progress-bar"><div class="progress-fill" id="batch-progress-fill" style="width:0%"></div></div>
+      <div id="batch-status-text" style="font-size:13px;color:#6b7280"></div>
+    </div>
+    <div id="batch-items"></div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <h3 style="margin:0;flex:1">HTTP 场景</h3>
+      <button class="btn btn-outline" onclick="showAddScenario()">+ 添加场景</button>
+      <button class="btn btn-success" id="btn-run-all" onclick="runAllScenarios()">全部执行</button>
+    </div>
+
+    <div class="add-step-form" id="add-scenario-form" style="display:none;margin-bottom:16px">
+      <h4 style="font-size:13px;color:#374151;margin-bottom:12px">新建场景</h4>
+      <div class="form-row"><label>场景ID</label><input type="text" id="new-scenario-id" placeholder="new-scenario-001"></div>
+      <div class="form-row"><label>场景名称</label><input type="text" id="new-scenario-name" placeholder="中文名称"></div>
+      <div class="form-row"><label>标签</label><input type="text" id="new-scenario-tags" placeholder="标签1,标签2（可选）"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary btn-sm" onclick="createScenario()">创建</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('add-scenario-form').style.display='none'">取消</button>
       </div>
     </div>
-    <div class="case-detail">
-      {{#if errors}}
-      <div class="error-list"><strong>校验错误:</strong><ul>{{#each errors}}<li>[{{layer}}] {{path}}: {{message}}</li>{{/each}}</ul></div>
-      {{/if}}
-      {{#if warnings}}
-      <div class="warning-list"><strong>警告:</strong><ul>{{#each warnings}}<li>[{{layer}}] {{path}}: {{message}}</li>{{/each}}</ul></div>
-      {{/if}}
 
-      <div class="detail-section">
-        <h4>基本信息</h4>
-        <div class="meta-row">
-          <label>名称: <input type="text" data-path="metadata.name" value="{{{escapeAttr name}}}"></label>
-          <label>优先级:
-            <select data-path="metadata.priority">
-              <option value="P0" {{#if (eq priority "P0")}}selected{{/if}}>P0</option>
-              <option value="P1" {{#if (eq priority "P1")}}selected{{/if}}>P1</option>
-              <option value="P2" {{#if (eq priority "P2")}}selected{{/if}}>P2</option>
-            </select>
-          </label>
-          <label>分组:
-            <select data-path="metadata.group">
-              <option value="SMOKE" {{#if (eq group "SMOKE")}}selected{{/if}}>SMOKE</option>
-              <option value="REGRESSION" {{#if (eq group "REGRESSION")}}selected{{/if}}>REGRESSION</option>
-              <option value="EDGE_CASE" {{#if (eq group "EDGE_CASE")}}selected{{/if}}>EDGE_CASE</option>
-            </select>
-          </label>
+    <div class="scenario-grid" id="scenario-grid">
+      {{#each scenarios}}
+      <div class="scenario-card" onclick="viewScenario('{{this.id}}')">
+        <div class="sc-head">
+          <span class="status-dot {{this.status}}"></span>
+          <span class="sc-name">{{this.name}}</span>
+          <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px;color:#ef4444;border-color:#fecaca;margin-left:8px" onclick="event.stopPropagation();deleteScenario('{{this.id}}','{{this.name}}')" title="删除场景">删</button>
+        </div>
+        <div class="sc-meta">
+          <span>{{this.id}}</span>
+          <span>{{this.stepCount}} 步骤</span>
+          {{#if this.tags}}<span>{{this.tags}}</span>{{/if}}
+        </div>
+        <div class="sc-steps">{{#each this.stepPreviews}}<span class="sc-step">{{this}}</span>{{/each}}</div>
+        <div class="btn-group">
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();viewScenario('{{this.id}}')">查看/编辑</button>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();runScenario('{{this.id}}')">执行</button>
         </div>
       </div>
-
-      <div class="detail-section">
-        <h4>目标接口</h4>
-        <table class="detail-table">
-          <tr><th>Service</th><td class="field">{{service}}</td><th>Method</th><td class="field">{{method}}</td></tr>
-          <tr><th>Input DTO</th><td class="field" colspan="3">{{inputType}}</td></tr>
-        </table>
-      </div>
-
-      <div class="detail-section">
-        <h4>输入字段</h4>
-        <table class="detail-table">
-          <tr><th style="width:20%">字段</th><th style="width:20%">类型</th><th>值</th></tr>
-          {{#each fields}}
-          <tr>
-            <td class="field">{{field}}</td>
-            <td>{{type}}</td>
-            <td><input type="text" data-path="input.fields[{{@index}}].value" value="{{{escapeAttr value}}}"></td>
-          </tr>
-          {{/each}}
-        </table>
-      </div>
-
-      <div class="detail-section">
-        <h4>断言</h4>
-        <table class="detail-table">
-          <tr><th style="width:15%">类型</th><th style="width:35%">目标</th><th>期望值</th></tr>
-          {{#each assertions}}
-          <tr>
-            <td>
-              <select data-path="expected.assertions[{{@index}}].type">
-                <option value="not_null" {{#if (eq type "not_null")}}selected{{/if}}>not_null</option>
-                <option value="equals" {{#if (eq type "equals")}}selected{{/if}}>equals</option>
-                <option value="true" {{#if (eq type "true")}}selected{{/if}}>true</option>
-                <option value="false" {{#if (eq type "false")}}selected{{/if}}>false</option>
-                <option value="contains" {{#if (eq type "contains")}}selected{{/if}}>contains</option>
-                <option value="greater_than" {{#if (eq type "greater_than")}}selected{{/if}}>greater_than</option>
-              </select>
-            </td>
-            <td><input type="text" data-path="expected.assertions[{{@index}}].target" value="{{{escapeAttr target}}}"></td>
-            <td><input type="text" data-path="expected.assertions[{{@index}}].value" value="{{{escapeAttr value}}}"></td>
-          </tr>
-          {{/each}}
-        </table>
-      </div>
-
-      <div class="detail-section">
-        <h4>备注</h4>
-        <textarea data-path="notes" rows="3" style="width:100%;font-family:monospace;font-size:12px;padding:8px;border:1px solid #d1d5db;border-radius:4px;">{{notes}}</textarea>
-      </div>
-
-      <div style="margin-top:16px; display:flex; align-items:center;">
-        <button class="btn-save" onclick="saveCase('{{id}}')">保存修改</button>
-        <span class="save-status" id="status-{{id}}"></span>
-      </div>
-
-      <div class="toggle-raw" onclick="toggleRaw(this)">显示原始 YAML</div>
-      <pre class="yaml-raw" style="display:none">{{raw}}</pre>
+      {{/each}}
     </div>
   </div>
-  {{/each}}
+
+  <div class="card hidden" id="cases-card">
+    <h3>Dubbo 用例</h3>
+    <table class="table" id="cases-table">
+      <thead><tr><th>状态</th><th>ID</th><th>名称</th><th>Service</th><th>Method</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card hidden" id="reports-card">
+    <h3>最近执行报告</h3>
+    <table class="table" id="recent-reports-table">
+      <thead><tr><th>场景</th><th>时间</th><th>通过/总数</th><th>耗时</th><th>操作</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
-<div style="text-align:center; margin-top:24px;">
-  <button onclick="finishReview()" style="padding:12px 32px; background:#22c55e; color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:600; cursor:pointer;">审查完成</button>
-  <div id="done-hint" style="margin-top:8px; font-size:13px; color:#6b7280;"></div>
+<!-- Scenario Detail -->
+<div id="view-scenario" class="hidden">
+  <div class="back-link" onclick="navigate('dashboard')">&#8592; 返回仪表盘</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <h3 id="scenario-title" style="margin:0"></h3>
+      <span id="scenario-id-badge" class="badge" style="font-family:monospace"></span>
+      <div style="flex:1"></div>
+      <button class="btn btn-success btn-sm" id="btn-run-scenario">执行场景</button>
+    </div>
+    <h4 style="font-size:13px;color:#6b7280;margin-bottom:8px">流程图</h4>
+    <div class="flow" id="scenario-flow"></div>
+    <h4 style="font-size:13px;color:#6b7280;margin:16px 0 8px">步骤详情</h4>
+    <div id="scenario-steps"></div>
+    <div class="add-step-form" id="add-step-form" style="display:none">
+      <h4 style="font-size:13px;color:#374151;margin-bottom:4px">添加新步骤</h4>
+      <div style="font-size:12px;color:#3b82f6;margin-bottom:12px">插入位置：<strong id="insert-position-label">末尾</strong></div>
+      <div class="form-row"><label>步骤ID</label><input type="text" id="new-step-id" placeholder="step-new-001"></div>
+      <div class="form-row"><label>步骤名称</label><input type="text" id="new-step-name" placeholder="中文名称"></div>
+      <div class="form-row"><label>HTTP方法</label>
+        <select id="new-step-method"><option value="POST">POST</option><option value="GET">GET</option><option value="PUT">PUT</option><option value="DELETE">DELETE</option></select>
+      </div>
+      <div class="form-row"><label>请求路径</label><input type="text" id="new-step-path" placeholder="/mtop/meta/eiam/admin/..."></div>
+      <div class="form-row"><label>请求体</label><textarea id="new-step-body" placeholder='{"key": "value"}'></textarea></div>
+      <div class="form-row"><label>断言</label><textarea id="new-step-assertions" placeholder='[{"type":"equals","target":"code","value":0}]'></textarea></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary btn-sm" onclick="addNewStep()">确认添加</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('add-step-form').style.display='none'">取消</button>
+      </div>
+    </div>
+    <div class="btn-group" style="margin-top:20px">
+      <button class="btn btn-primary" id="btn-save-scenario">保存修改</button>
+      <span id="save-status" style="font-size:13px;margin-left:8px"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Run Progress -->
+<div id="view-run" class="hidden">
+  <div class="back-link" onclick="navigate('dashboard')">&#8592; 返回仪表盘</div>
+  <div class="card">
+    <h3 id="run-title">执行中...</h3>
+    <div class="run-progress">
+      <div class="progress-bar"><div class="progress-fill" id="run-progress-fill" style="width:0%"></div></div>
+      <div id="run-status-text" style="font-size:13px;color:#6b7280"></div>
+    </div>
+    <div id="run-steps"></div>
+  </div>
+</div>
+
+<!-- Report -->
+<div id="view-report" class="hidden">
+  <div class="back-link" onclick="navigate('dashboard')">&#8592; 返回仪表盘</div>
+  <div class="card">
+    <h3 id="report-title">测试报告</h3>
+    <div class="summary" id="report-summary"></div>
+    <div class="progress-bar" style="margin:16px 0"><div class="progress-fill done" id="report-progress" style="width:0%"></div></div>
+    <div id="report-steps"></div>
+  </div>
+</div>
+
+<!-- Reports History -->
+<div id="view-reports" class="hidden">
+  <div class="card">
+    <h3>历史执行报告</h3>
+    <div id="reports-list"></div>
+  </div>
+</div>
+
 </div>
 
 <div class="footer">Generated by @digital-user/api-test-framework | {{generated}}</div>
 
 <script>
-async function finishReview() {
-  if (!confirm('确认审查完成？服务将自动关闭。')) return;
-  const hint = document.getElementById('done-hint');
+const REQUIREMENTS = {{{requirementsJson}}};
+const STATE = {
+  currentReq: '{{requirement}}',
+  scenarios: {{{scenariosJson}}},
+  currentScenario: null,
+  currentRunId: null,
+  pollTimer: null,
+  batchPollTimer: null,
+  expandedToggles: new Set(),
+  dirty: false,
+  insertPosition: null,
+};
+
+// ==================== Requirement Switching ====================
+async function switchRequirement(reqId) {
+  if (STATE.dirty && !confirm('有未保存的修改，是否放弃？')) {
+    document.getElementById('req-selector').value = STATE.currentReq;
+    return;
+  }
+  STATE.dirty = false;
+  STATE.currentReq = reqId;
+
+  // Reset batch panel
+  document.getElementById('batch-panel').classList.add('hidden');
+  if (STATE.batchPollTimer) { clearInterval(STATE.batchPollTimer); STATE.batchPollTimer = null; }
+
   try {
-    await fetch('/api/done', { method: 'POST' });
-    hint.textContent = '服务已关闭，可以关闭此页面。';
-    hint.style.color = '#22c55e';
-  } catch(e) {
-    hint.textContent = '服务已关闭。';
-    hint.style.color = '#22c55e';
-  }
-}
+    const resp = await fetch('/api/scenarios/' + encodeURIComponent(reqId));
+    const result = await resp.json();
+    if (result.ok) {
+      STATE.scenarios = result.scenarios.map(s => s.data);
+      // Re-render scenario grid
+      const grid = document.getElementById('scenario-grid');
+      grid.innerHTML = result.scenarios.map(s => {
+        const steps = s.data.steps || [];
+        const preview = steps.slice(0, 4).map(st => `<span class="sc-step">${st.name}</span>`).join('');
+        return `<div class="scenario-card" onclick="viewScenario('${s.data.metadata.id}')">
+          <div class="sc-head">
+            <span class="status-dot pass"></span>
+            <span class="sc-name">${s.data.metadata.name}</span>
+            <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px;color:#ef4444;border-color:#fecaca;margin-left:8px" onclick="event.stopPropagation();deleteScenario('${s.data.metadata.id}','${s.data.metadata.name}')" title="删除场景">删</button>
+          </div>
+          <div class="sc-meta"><span>${s.data.metadata.id}</span><span>${steps.length} 步骤</span>${s.data.metadata.tags?.length ? `<span>${s.data.metadata.tags.join(', ')}</span>` : ''}</div>
+          <div class="sc-steps">${preview}</div>
+          <div class="btn-group">
+            <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();viewScenario('${s.data.metadata.id}')">查看/编辑</button>
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();runScenario('${s.data.metadata.id}')">执行</button>
+          </div>
+        </div>`;
+      }).join('');
 
-function toggleDetail(header) {
-  const detail = header.nextElementSibling;
-  const arrow = header.querySelector('.arrow');
-  detail.classList.toggle('expanded');
-  arrow.classList.toggle('expanded');
-}
-function toggleRaw(btn) {
-  const pre = btn.nextElementSibling;
-  if (pre.style.display === 'none') { pre.style.display = 'block'; btn.textContent = '隐藏原始 YAML'; }
-  else { pre.style.display = 'none'; btn.textContent = '显示原始 YAML'; }
-}
-
-function setNestedValue(obj, path, value) {
-  const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
-  let cur = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const key = /^\d+$/.test(parts[i]) ? parseInt(parts[i]) : parts[i];
-    if (cur[key] === undefined) cur[key] = /^\d+$/.test(parts[i+1]) ? [] : {};
-    cur = cur[key];
-  }
-  const lastKey = /^\d+$/.test(parts[parts.length-1]) ? parseInt(parts[parts.length-1]) : parts[parts.length-1];
-  cur[lastKey] = value;
-}
-
-function parseValue(str) {
-  if (str === '' || str === undefined || str === null) return undefined;
-  if (str === 'true') return true;
-  if (str === 'false') return false;
-  // Try JSON parse for arrays/objects
-  if ((str.startsWith('[') && str.endsWith(']')) || (str.startsWith('{') && str.endsWith('}'))) {
-    try { return JSON.parse(str); } catch(e) {}
-  }
-  // Try number
-  const num = Number(str);
-  if (!isNaN(num) && str.trim() !== '') return num;
-  return str;
-}
-
-async function saveCase(caseId) {
-  const item = document.querySelector(`[data-case-id="${caseId}"]`);
-  const statusEl = document.getElementById('status-' + caseId);
-  const btn = item.querySelector('.btn-save');
-
-  // Load original data
-  const data = JSON.parse(item.getAttribute('data-case-json'));
-
-  // Collect all editable inputs
-  const inputs = item.querySelectorAll('[data-path]');
-  inputs.forEach(input => {
-    const path = input.getAttribute('data-path');
-    let val;
-    if (input.tagName === 'TEXTAREA') {
-      val = input.value;
-    } else if (input.tagName === 'SELECT') {
-      val = input.value;
-    } else {
-      val = parseValue(input.value);
-    }
-    if (val !== undefined) {
-      setNestedValue(data, path, val);
-    } else {
-      // Remove the key for undefined values (like empty assertion value)
-      const parts = path.replace(/\[(\d+)\]/g, '.$1').split('.');
-      let cur = data;
-      for (let i = 0; i < parts.length - 1; i++) {
-        const key = /^\d+$/.test(parts[i]) ? parseInt(parts[i]) : parts[i];
-        if (!cur[key]) return;
-        cur = cur[key];
+      // Refresh reports if on reports tab
+      if (!document.getElementById('view-reports').classList.contains('hidden')) {
+        loadReports();
       }
-      const lastKey = /^\d+$/.test(parts[parts.length-1]) ? parseInt(parts[parts.length-1]) : parts[parts.length-1];
-      delete cur[lastKey];
+
+      showToast('success', '已切换: ' + (REQUIREMENTS.find(r => r.id === reqId)?.name || reqId));
+    }
+  } catch (e) {
+    showToast('error', '加载失败: ' + e.message);
+  }
+}
+
+
+// ==================== Navigation ====================
+function navigate(view) {
+  if (STATE.dirty && view !== 'scenario') {
+    if (!confirm('有未保存的修改，是否放弃？')) return;
+    STATE.dirty = false;
+  }
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+  const viewEl = document.getElementById('view-' + view);
+  if (viewEl) viewEl.classList.remove('hidden');
+  const navEl = document.getElementById('nav-' + view);
+  if (navEl) navEl.classList.add('active');
+  if (view === 'reports') loadReports();
+}
+
+// ==================== Scenario Detail ====================
+function viewScenario(scenarioId) {
+  try {
+    const scenario = STATE.scenarios.find(s => s.metadata.id === scenarioId);
+    if (!scenario) {
+      showToast('error', '未找到场景: ' + scenarioId);
+      return;
+    }
+    STATE.currentScenario = scenario;
+
+    document.getElementById('scenario-title').textContent = scenario.metadata.name;
+    document.getElementById('scenario-id-badge').textContent = scenario.metadata.id;
+    renderScenarioContent();
+    navigate('scenario');
+  } catch (e) {
+    showToast('error', '加载失败: ' + e.message);
+    console.error(e);
+  }
+}
+
+function renderScenarioContent() {
+  const scenario = STATE.currentScenario;
+  if (!scenario) return;
+  STATE.dirty = false;
+
+  const steps = Array.isArray(scenario.steps) ? scenario.steps : [];
+
+  // Flow chart
+  const flowEl = document.getElementById('scenario-flow');
+  flowEl.innerHTML = steps.map((step, i) => {
+    const node = `<div class="flow-node"><span class="fn-num">${String(i+1).padStart(2,'0')}</span><span class="fn-name">${step.name || ''}</span><span class="fn-method"><span class="method-tag ${step.request?.method || 'POST'}">${step.request?.method || 'POST'}</span></span></div>`;
+    const arrow = i < steps.length - 1 ? '<div class="flow-arrow">&#8594;</div>' : '';
+    return node + arrow;
+  }).join('');
+
+  // Step details
+  const stepsEl = document.getElementById('scenario-steps');
+  stepsEl.innerHTML = steps.map((step, i) => {
+    const bodyStr = step.request?.body ? JSON.stringify(step.request.body, null, 2) : '';
+    const assertions = Array.isArray(step.expected?.assertions) ? step.expected.assertions : [];
+    const assertionsHtml = assertions.map(a =>
+      `<div style="margin-bottom:4px"><span class="badge pass">${a.type}</span> <code>${a.target}</code>${a.value !== undefined ? ' → <code>' + JSON.stringify(a.value) + '</code>' : ''}</div>`
+    ).join('') || '<span style="color:#9ca3af">无断言</span>';
+    const captures = step.capture && typeof step.capture === 'object' ? step.capture : {};
+    const capturesHtml = Object.entries(captures).map(([name, path]) =>
+      `<div><span class="capture-highlight">${name}</span> ← <code>${path}</code></div>`
+    ).join('');
+
+    return `<div class="step-detail" data-step-idx="${i}">
+      <div class="step-header" onclick="toggleStep(this)">
+        <span style="color:#94a3b8;font-size:12px">${String(i+1).padStart(2,'0')}</span>
+        <span class="method-tag ${step.request?.method || 'POST'}">${step.request?.method || 'POST'}</span>
+        <span style="font-weight:500">${step.name || ''}</span>
+        <span style="flex:1"></span>
+        <span style="font-family:monospace;font-size:12px;color:#6b7280">${step.request?.path || ''}</span>
+        <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();showInsertForm(${i})" title="在此步骤前插入">+前</button>
+        <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px" onclick="event.stopPropagation();showInsertForm(${i+1})" title="在此步骤后插入">+后</button>
+        <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px;color:#ef4444;border-color:#fecaca" onclick="event.stopPropagation();deleteStep(${i})" title="删除步骤">删</button>
+        <span style="color:#94a3b8;margin-left:4px">&#9660;</span>
+      </div>
+      <div class="step-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div>
+            <div class="step-field"><label>路径</label><input type="text" value="${step.request?.path || ''}" data-step="${i}" data-path="request.path" oninput="markDirty()"></div>
+            <div class="step-field"><label>请求体 (JSON)</label><textarea data-step="${i}" data-path="request.body" oninput="markDirty()">${bodyStr}</textarea></div>
+          </div>
+          <div>
+            <div class="step-field"><label>断言</label>${assertionsHtml}</div>
+            ${capturesHtml ? `<div class="step-field"><label>捕获</label>${capturesHtml}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + `<div style="text-align:center;margin-top:8px"><button class="btn btn-outline btn-sm" onclick="showInsertForm(${steps.length})">+ 末尾添加步骤</button></div>`;
+
+  document.getElementById('btn-run-scenario').onclick = () => runScenario(scenario.metadata.id);
+  document.getElementById('btn-save-scenario').onclick = saveScenario;
+  document.getElementById('add-step-form').style.display = 'none';
+}
+
+function toggleStep(header) {
+  header.nextElementSibling.classList.toggle('expanded');
+}
+
+function markDirty() {
+  STATE.dirty = true;
+}
+
+function showInsertForm(position) {
+  STATE.insertPosition = position;
+  document.getElementById('add-step-form').style.display = 'block';
+  document.getElementById('new-step-id').value = '';
+  document.getElementById('new-step-name').value = '';
+  document.getElementById('new-step-path').value = '';
+  document.getElementById('new-step-body').value = '';
+  document.getElementById('new-step-assertions').value = '';
+  document.getElementById('new-step-id').focus();
+  const label = position >= STATE.currentScenario.steps.length ? '末尾' : `步骤 ${position + 1} 之前`;
+  document.getElementById('insert-position-label').textContent = label;
+}
+
+function deleteStep(index) {
+  const step = STATE.currentScenario.steps[index];
+  if (!confirm(`确认删除步骤 "${step.name}"？`)) return;
+  STATE.currentScenario.steps.splice(index, 1);
+  STATE.dirty = true;
+  renderScenarioContent();
+  showToast('success', `已删除步骤: ${step.name}（记得保存）`);
+}
+
+function addNewStep() {
+  const id = document.getElementById('new-step-id').value.trim();
+  const name = document.getElementById('new-step-name').value.trim();
+  const method = document.getElementById('new-step-method').value;
+  const path = document.getElementById('new-step-path').value.trim();
+  const bodyStr = document.getElementById('new-step-body').value.trim();
+  const assertionsStr = document.getElementById('new-step-assertions').value.trim();
+
+  if (!id || !name || !path) {
+    showToast('error', '请填写步骤ID、名称和路径');
+    return;
+  }
+
+  let body = undefined;
+  if (bodyStr) {
+    try { body = JSON.parse(bodyStr); } catch { showToast('error', '请求体 JSON 格式错误'); return; }
+  }
+
+  let assertions = [];
+  if (assertionsStr) {
+    try { assertions = JSON.parse(assertionsStr); } catch { showToast('error', '断言 JSON 格式错误'); return; }
+  }
+
+  const pos = STATE.insertPosition ?? STATE.currentScenario.steps.length;
+  const newStep = { id, name, request: { method, path, body }, expected: { status: 200, assertions } };
+  STATE.currentScenario.steps.splice(pos, 0, newStep);
+  STATE.dirty = true;
+  renderScenarioContent();
+  showToast('success', `已在位置 ${pos + 1} 插入步骤: ${name}（记得保存）`);
+}
+
+async function saveScenario() {
+  if (!STATE.currentScenario) return;
+  const statusEl = document.getElementById('save-status');
+  statusEl.textContent = '保存中...';
+  statusEl.style.color = '#6b7280';
+
+  const edits = document.querySelectorAll('#scenario-steps [data-step]');
+  const data = JSON.parse(JSON.stringify(STATE.currentScenario));
+  edits.forEach(el => {
+    const stepIdx = parseInt(el.getAttribute('data-step'));
+    const path = el.getAttribute('data-path');
+    if (path === 'request.body') {
+      try { data.steps[stepIdx].request.body = JSON.parse(el.value); } catch {}
+    } else if (path === 'request.path') {
+      data.steps[stepIdx].request.path = el.value;
     }
   });
 
-  btn.disabled = true;
-  statusEl.textContent = '保存中...';
-  statusEl.className = 'save-status';
-
   try {
-    const resp = await fetch('/api/save', {
+    const resp = await fetch('/api/save-scenario', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ caseId, data })
+      body: JSON.stringify({ requirement: STATE.currentReq, scenarioId: data.metadata.id, data }),
     });
     const result = await resp.json();
     if (result.ok) {
-      statusEl.textContent = '已保存';
-      statusEl.className = 'save-status success';
-      item.setAttribute('data-case-json', JSON.stringify(data));
+      STATE.currentScenario = data;
+      const idx = STATE.scenarios.findIndex(s => s.metadata.id === data.metadata.id);
+      if (idx >= 0) STATE.scenarios[idx] = data;
+      STATE.dirty = false;
+      // Update dashboard card step count
+      updateCardPreview(data.metadata.id, data.steps);
+      statusEl.textContent = '已保存 ✓ YAML 已更新';
+      statusEl.style.color = '#22c55e';
     } else {
       statusEl.textContent = '保存失败: ' + result.error;
-      statusEl.className = 'save-status error';
+      statusEl.style.color = '#ef4444';
     }
-  } catch(e) {
-    statusEl.textContent = '网络错误: ' + e.message;
-    statusEl.className = 'save-status error';
+  } catch (e) {
+    statusEl.textContent = '网络错误';
+    statusEl.style.color = '#ef4444';
   }
-  btn.disabled = false;
 }
+
+// ==================== Execution ====================
+async function runScenario(scenarioId) {
+  navigate('run');
+  const scenario = STATE.scenarios.find(s => s.metadata.id === scenarioId);
+  document.getElementById('run-title').textContent = '执行中: ' + (scenario?.metadata.name || scenarioId);
+  document.getElementById('run-progress-fill').style.width = '0%';
+  document.getElementById('run-progress-fill').className = 'progress-fill';
+  document.getElementById('run-status-text').textContent = '正在启动...';
+  document.getElementById('run-steps').innerHTML = '';
+  document.getElementById('run-done-btn')?.remove();
+
+  try {
+    const resp = await fetch('/api/run-scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requirement: STATE.currentReq, scenarioId }),
+    });
+    const result = await resp.json();
+    if (!result.ok) {
+      document.getElementById('run-status-text').textContent = '启动失败: ' + result.error;
+      return;
+    }
+    STATE.currentRunId = result.runId;
+    startPolling(result.runId);
+  } catch (e) {
+    document.getElementById('run-status-text').textContent = '网络错误: ' + e.message;
+  }
+}
+
+// ==================== Run All ====================
+async function runAllScenarios() {
+  const btn = document.getElementById('btn-run-all');
+  btn.disabled = true;
+  btn.textContent = '执行中...';
+
+  const panel = document.getElementById('batch-panel');
+  panel.classList.remove('hidden');
+  document.getElementById('batch-title').textContent = '批量执行中...';
+  document.getElementById('batch-progress-fill').style.width = '0%';
+  document.getElementById('batch-progress-fill').className = 'progress-fill';
+  document.getElementById('batch-status-text').textContent = '正在启动...';
+  document.getElementById('batch-items').innerHTML = '';
+
+  try {
+    const resp = await fetch('/api/run-all', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requirement: STATE.currentReq }),
+    });
+    const result = await resp.json();
+    if (!result.ok) {
+      document.getElementById('batch-status-text').textContent = '启动失败: ' + result.error;
+      btn.disabled = false;
+      btn.textContent = '全部执行';
+      return;
+    }
+    startBatchPolling(result.batchId);
+  } catch (e) {
+    document.getElementById('batch-status-text').textContent = '网络错误: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = '全部执行';
+  }
+}
+
+function startBatchPolling(batchId) {
+  if (STATE.batchPollTimer) clearInterval(STATE.batchPollTimer);
+  STATE.batchPollTimer = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/batch-status/' + batchId);
+      const result = await resp.json();
+      if (!result.ok) return;
+      updateBatchUI(result.batch);
+    } catch {}
+  }, 500);
+}
+
+function updateBatchUI(batch) {
+  const pct = batch.total > 0 ? Math.round((batch.completed / batch.total) * 100) : 0;
+  const fillEl = document.getElementById('batch-progress-fill');
+  fillEl.style.width = pct + '%';
+
+  const statusEl = document.getElementById('batch-status-text');
+  statusEl.textContent = `${batch.completed}/${batch.total} 场景完成 | 通过: ${batch.passed} | 失败: ${batch.failed} | 当前: ${batch.currentScenario || '-'}`;
+
+  if (batch.status === 'done') {
+    fillEl.className = batch.failed > 0 ? 'progress-fill error' : 'progress-fill done';
+    document.getElementById('batch-title').textContent = batch.failed > 0 ? `批量执行完成（${batch.failed} 个失败）` : '批量执行完成';
+    clearInterval(STATE.batchPollTimer);
+    document.getElementById('btn-run-all').disabled = false;
+    document.getElementById('btn-run-all').textContent = '全部执行';
+  }
+
+  // Show individual results
+  const itemsEl = document.getElementById('batch-items');
+  itemsEl.innerHTML = (batch.results || []).map(r => {
+    const icon = r.summary.failed > 0 ? '&#10007;' : '&#10003;';
+    const cls = r.summary.failed > 0 ? 'color:#ef4444' : 'color:#22c55e';
+    return `<div class="bs-item"><span style="${cls};font-size:16px">${icon}</span><span style="flex:1">${r.scenarioName}</span><span style="font-family:monospace;font-size:12px;color:#9ca3af">${r.summary.duration?.toFixed(2) || '-'}s</span></div>`;
+  }).join('');
+}
+
+// ==================== Polling ====================
+function startPolling(runId) {
+  if (STATE.pollTimer) clearInterval(STATE.pollTimer);
+  STATE.pollTimer = setInterval(async () => {
+    try {
+      const resp = await fetch('/api/run-status/' + runId);
+      const result = await resp.json();
+      if (!result.ok) return;
+      updateRunUI(result.report);
+    } catch {}
+  }, 500);
+}
+
+function updateRunUI(report) {
+  const { summary, steps } = report;
+  const total = summary.total;
+  const done = summary.passed + summary.failed;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('run-progress-fill').style.width = pct + '%';
+  const statusEl = document.getElementById('run-status-text');
+  if (summary.failed > 0) {
+    document.getElementById('run-progress-fill').className = 'progress-fill error';
+    statusEl.textContent = `失败: ${summary.passed}/${total} 通过, ${summary.failed} 失败, 耗时 ${summary.duration?.toFixed(2) || 0}s`;
+  } else if (done >= total) {
+    document.getElementById('run-progress-fill').className = 'progress-fill done';
+    statusEl.textContent = `全部通过: ${summary.passed}/${total}, 耗时 ${summary.duration?.toFixed(2) || 0}s`;
+    if (STATE.pollTimer) clearInterval(STATE.pollTimer);
+  } else {
+    statusEl.textContent = `执行中: ${done}/${total} 步骤完成`;
+  }
+
+  document.getElementById('run-steps').innerHTML = steps.map((step, idx) => {
+    const icon = step.status === 'passed' ? '&#10003;' : step.status === 'failed' ? '&#10007;' : '&#9675;';
+    const extra = step.errorMessage ? `<div class="error-msg">${escapeHtml(step.errorMessage)}</div>` : '';
+    const hasBody = step.requestBody || step.responseBody;
+    const toggleKey = 'run-' + idx;
+    const isExpanded = STATE.expandedToggles.has(toggleKey);
+    const reqResp = hasBody ? `
+      <div class="req-resp-toggle" onclick="toggleReqResp('${toggleKey}', this)">显示请求/响应</div>
+      <div style="display:${isExpanded ? 'block' : 'none'}">
+        ${step.requestBody ? `<div style="margin-top:6px"><strong>Request:</strong><div class="json-view">${escapeHtml(JSON.stringify(step.requestBody, null, 2))}</div></div>` : ''}
+        ${step.responseBody ? `<div style="margin-top:6px"><strong>Response:</strong><div class="json-view">${escapeHtml(JSON.stringify(step.responseBody, null, 2))}</div></div>` : ''}
+      </div>` : '';
+    return `<div class="step-result ${step.status}"><span class="sr-status">${icon}</span><span class="sr-name">${step.name}</span><span class="sr-duration">${step.duration?.toFixed(2) || '-'}s</span></div>${extra}${reqResp}`;
+  }).join('');
+
+  if (done >= total) {
+    if (!document.getElementById('run-done-btn')) {
+      const div = document.createElement('div');
+      div.id = 'run-done-btn';
+      div.style.textAlign = 'center';
+      div.style.marginTop = '16px';
+      div.innerHTML = '<button class="btn btn-success" onclick="navigate(\'dashboard\')">返回仪表盘</button>';
+      document.getElementById('run-steps').after(div);
+    }
+  }
+}
+
+// ==================== Reports ====================
+function formatTime(isoStr) {
+  if (!isoStr) return '-';
+  try {
+    const d = new Date(isoStr);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  } catch { return isoStr; }
+}
+
+async function loadReports() {
+  try {
+    const resp = await fetch('/api/reports?req=' + encodeURIComponent(STATE.currentReq));
+    const result = await resp.json();
+    if (!result.ok) return;
+    const el = document.getElementById('reports-list');
+    if (result.reports.length === 0) {
+      el.innerHTML = '<div style="text-align:center;padding:40px;color:#9ca3af">暂无执行报告</div>';
+      return;
+    }
+    el.innerHTML = '';
+    for (const r of result.reports) {
+      const statusIcon = r.failed > 0 ? '&#10007;' : '&#10003;';
+      const statusColor = r.failed > 0 ? '#ef4444' : '#22c55e';
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.marginBottom = '12px';
+
+      let html = `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <span style="color:${statusColor};font-size:18px">${statusIcon}</span>
+        <span style="font-size:13px;color:#374151;font-weight:500">${formatTime(r.generated)}</span>
+        <span style="flex:1"></span>
+        <span class="badge ${r.failed > 0 ? 'fail' : 'pass'}">${r.passed}/${r.total} 场景通过</span>
+      </div>`;
+
+      for (let si = 0; si < (r.scenarios || []).length; si++) {
+        const s = r.scenarios[si];
+        const sIcon = s.status === 'failed' ? '&#10007;' : '&#10003;';
+        const sColor = s.status === 'failed' ? '#ef4444' : '#22c55e';
+
+        html += `<div class="report-scenario" style="border-bottom:1px solid #e5e7eb">`;
+        html += `<div class="report-scenario-header" style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer">
+          <span style="color:${sColor};font-size:14px">${sIcon}</span>
+          <span style="font-weight:500;font-size:13px;flex:1">${s.scenarioName || s.scenarioId}</span>
+          <span class="badge ${s.status === 'failed' ? 'fail' : 'pass'}" style="font-size:10px">${s.passed}/${s.total}</span>
+          <span style="font-family:monospace;font-size:11px;color:#9ca3af">${s.duration?.toFixed(2) || '-'}s</span>
+          <span style="color:#94a3b8;font-size:10px" class="expand-arrow">&#9660;</span>
+        </div>`;
+
+        html += `<div class="report-steps" style="display:none">`;
+        for (let sti = 0; sti < (s.steps || []).length; sti++) {
+          const st = s.steps[sti];
+          const stIcon = st.status === 'passed' ? '&#10003;' : '&#10007;';
+          const stColor = st.status === 'passed' ? '#22c55e' : '#ef4444';
+
+          html += `<div style="padding:6px 12px 6px 24px;border-bottom:1px solid #f3f4f6">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+              <span style="color:${stColor}">${stIcon}</span>
+              <span style="font-weight:500">${st.name || st.id}</span>
+              <span class="method-tag ${st.method || 'POST'}" style="font-size:10px">${st.method || 'POST'}</span>
+              <span style="flex:1;font-family:monospace;color:#6b7280;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${st.url || ''}</span>
+              <span style="font-family:monospace;color:#9ca3af">${st.duration?.toFixed(2) || '-'}s</span>
+            </div>`;
+
+          if (st.errorMessage) {
+            html += `<div class="error-msg" style="margin-top:4px;font-size:12px">${escHtml(st.errorMessage)}</div>`;
+          }
+
+          if (st.requestBody || st.responseBody) {
+            const detailId = `detail-${r.batchId}-${si}-${sti}`;
+            html += `<div style="margin-top:4px"><span class="req-resp-toggle" onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none'" style="font-size:11px;cursor:pointer;color:#6b7280">查看详情</span></div>`;
+            html += `<div id="${detailId}" style="display:none">`;
+            if (st.requestBody !== undefined) {
+              html += `<div style="margin-top:4px"><strong style="font-size:11px;color:#6b7280">Request:</strong><div class="json-view" style="font-size:11px;max-height:200px">${escHtml(JSON.stringify(st.requestBody, null, 2))}</div></div>`;
+            }
+            if (st.responseBody !== undefined) {
+              html += `<div style="margin-top:4px"><strong style="font-size:11px;color:#6b7280">Response:</strong><div class="json-view" style="font-size:11px;max-height:200px">${escHtml(JSON.stringify(st.responseBody, null, 2))}</div></div>`;
+            }
+            html += `</div>`;
+          }
+          html += `</div>`;
+        }
+        html += `</div></div>`;
+      }
+
+      card.innerHTML = html;
+      el.appendChild(card);
+
+      // Bind scenario expand/collapse
+      card.querySelectorAll('.report-scenario-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const stepsDiv = header.nextElementSibling;
+          const arrow = header.querySelector('.expand-arrow');
+          if (stepsDiv.style.display === 'none') {
+            stepsDiv.style.display = 'block';
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
+          } else {
+            stepsDiv.style.display = 'none';
+            if (arrow) arrow.style.transform = '';
+          }
+        });
+      });
+    }
+  } catch (e) {
+    console.error('loadReports error:', e);
+  }
+}
+
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+async function viewReport(fileName) {
+  navigate('report');
+  document.getElementById('report-title').textContent = '加载中...';
+  try {
+    const resp = await fetch('/api/report/' + encodeURIComponent(STATE.currentReq) + '/' + encodeURIComponent(fileName));
+    const result = await resp.json();
+    if (!result.ok) { document.getElementById('report-title').textContent = '加载失败'; return; }
+    renderReport(result.report);
+  } catch (e) {
+    document.getElementById('report-title').textContent = '加载失败: ' + e.message;
+  }
+}
+
+function renderReport(report) {
+  document.getElementById('report-title').textContent = '测试报告: ' + (report.scenarioName || report.scenarioId);
+  const s = report.summary;
+  const pct = s.total > 0 ? Math.round((s.passed / s.total) * 100) : 0;
+  document.getElementById('report-summary').innerHTML = `
+    <div class="summary-card"><div class="num num-total">${s.total}</div><div class="lbl">总步骤</div></div>
+    <div class="summary-card"><div class="num num-pass">${s.passed}</div><div class="lbl">通过</div></div>
+    <div class="summary-card"><div class="num num-fail">${s.failed}</div><div class="lbl">失败</div></div>
+    <div class="summary-card"><div class="num" style="color:#6366f1">${s.duration?.toFixed(2) || 0}s</div><div class="lbl">耗时</div></div>`;
+  document.getElementById('report-progress').style.width = pct + '%';
+  document.getElementById('report-steps').innerHTML = report.steps.map((step, idx) => {
+    const icon = step.status === 'passed' ? '&#10003;' : '&#10007;';
+    const extra = step.errorMessage ? `<div class="error-msg">${escapeHtml(step.errorMessage)}</div>` : '';
+    const toggleKey = 'report-' + idx;
+    const isExpanded = STATE.expandedToggles.has(toggleKey);
+    return `<div class="step-result ${step.status}"><span class="sr-status">${icon}</span><span class="sr-name">${step.name}</span><span class="sr-duration">${step.duration?.toFixed(2) || '-'}s</span></div>${extra}
+      <div class="req-resp-toggle" onclick="toggleReqResp('${toggleKey}', this)">显示请求/响应</div>
+      <div style="display:${isExpanded ? 'block' : 'none'}">
+        ${step.requestBody ? `<div style="margin-top:6px"><strong>Request:</strong><div class="json-view">${escapeHtml(JSON.stringify(step.requestBody, null, 2))}</div></div>` : ''}
+        ${step.responseBody ? `<div style="margin-top:6px"><strong>Response:</strong><div class="json-view">${escapeHtml(JSON.stringify(step.responseBody, null, 2))}</div></div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ==================== Utils ====================
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleReqResp(key, el) {
+  const panel = el.nextElementSibling;
+  if (STATE.expandedToggles.has(key)) {
+    STATE.expandedToggles.delete(key);
+    panel.style.display = 'none';
+  } else {
+    STATE.expandedToggles.add(key);
+    panel.style.display = 'block';
+  }
+}
+
+function showToast(type, msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ==================== Scenario CRUD ====================
+function showAddScenario() {
+  document.getElementById('add-scenario-form').style.display = 'block';
+  document.getElementById('new-scenario-id').value = '';
+  document.getElementById('new-scenario-name').value = '';
+  document.getElementById('new-scenario-tags').value = '';
+  document.getElementById('new-scenario-id').focus();
+}
+
+async function createScenario() {
+  const id = document.getElementById('new-scenario-id').value.trim();
+  const name = document.getElementById('new-scenario-name').value.trim();
+  const tagsStr = document.getElementById('new-scenario-tags').value.trim();
+
+  if (!id || !name) {
+    showToast('error', '请填写场景ID和名称');
+    return;
+  }
+
+  const tags = tagsStr ? tagsStr.split(/[,，]/).map(t => t.trim()).filter(Boolean) : [];
+
+  try {
+    const resp = await fetch('/api/create-scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requirement: STATE.currentReq, scenarioId: id, name, tags }),
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      showToast('success', '场景已创建: ' + name);
+      // Add card to grid
+      const grid = document.getElementById('scenario-grid');
+      const card = document.createElement('div');
+      card.className = 'scenario-card';
+      card.setAttribute('onclick', `viewScenario('${id}')`);
+      card.innerHTML = `<div class="sc-head">
+        <span class="status-dot pass"></span>
+        <span class="sc-name">${name}</span>
+        <button class="btn btn-outline btn-sm" style="padding:2px 6px;font-size:11px;color:#ef4444;border-color:#fecaca;margin-left:8px" onclick="event.stopPropagation();deleteScenario('${id}','${name}')" title="删除场景">删</button>
+      </div>
+      <div class="sc-meta"><span>${id}</span><span>0 步骤</span>${tags.length ? `<span>${tags.join(', ')}</span>` : ''}</div>
+      <div class="sc-steps"></div>
+      <div class="btn-group">
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();viewScenario('${id}')">查看/编辑</button>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();runScenario('${id}')">执行</button>
+      </div>`;
+      grid.appendChild(card);
+
+      // Sync to STATE
+      STATE.scenarios.push({
+        version: '2.0',
+        metadata: { id, name, requirement: STATE.currentReq, author: 'web', created: new Date().toISOString().split('T')[0], tags },
+        config: { baseUrl: '${env:TC_BASE_URL}', cookieEnv: 'TC_COOKIE', headers: { 'content-type': 'application/json;charset=UTF-8', group: 'staging', 'x-retail-locale': 'CN' } },
+        steps: [],
+      });
+
+      document.getElementById('add-scenario-form').style.display = 'none';
+    } else {
+      showToast('error', '创建失败: ' + result.error);
+    }
+  } catch (e) {
+    showToast('error', '网络错误: ' + e.message);
+  }
+}
+
+async function deleteScenario(scenarioId, scenarioName) {
+  if (!confirm(`确认删除场景 "${scenarioName}"？\n对应的 YAML 文件将被删除。`)) return;
+
+  try {
+    const resp = await fetch('/api/delete-scenario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requirement: STATE.currentReq, scenarioId }),
+    });
+    const result = await resp.json();
+    if (result.ok) {
+      // Remove card from grid
+      const cards = document.querySelectorAll('.scenario-card');
+      for (const card of cards) {
+        if (card.getAttribute('onclick')?.includes(scenarioId)) {
+          card.remove();
+          break;
+        }
+      }
+      // Remove from STATE
+      STATE.scenarios = STATE.scenarios.filter(s => s.metadata.id !== scenarioId);
+      showToast('success', '已删除: ' + scenarioName);
+    } else {
+      showToast('error', '删除失败: ' + result.error);
+    }
+  } catch (e) {
+    showToast('error', '网络错误: ' + e.message);
+  }
+}
+
+function updateCardPreview(scenarioId, steps) {
+  const cards = document.querySelectorAll('.scenario-card');
+  for (const card of cards) {
+    if (card.getAttribute('onclick')?.includes(scenarioId)) {
+      // Update step count
+      const metaEl = card.querySelector('.sc-meta');
+      if (metaEl) {
+        const spans = metaEl.querySelectorAll('span');
+        if (spans[1]) spans[1].textContent = steps.length + ' 步骤';
+      }
+      // Update step previews
+      const stepsEl = card.querySelector('.sc-steps');
+      if (stepsEl) {
+        stepsEl.innerHTML = steps.slice(0, 4).map(s => `<span class="sc-step">${s.name || ''}</span>`).join('');
+      }
+      break;
+    }
+  }
+}
+
+// Set selector to current requirement
+document.getElementById('req-selector').value = STATE.currentReq;
 </script>
 </body>
 </html>

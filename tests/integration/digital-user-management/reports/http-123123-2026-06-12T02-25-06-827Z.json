@@ -1,0 +1,26 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "123123",
+  "scenarioName": "啊是否打算的",
+  "generated": "2026-06-12T02-25-06-827Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.102
+  },
+  "steps": [
+    {
+      "id": "12312",
+      "name": "阿水淀粉",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/123123",
+      "status": "failed",
+      "duration": 0.102,
+      "requestBody": 123,
+      "responseBody": "Bucket Access Denied: Only owner is allowed to edit bucket property, region=staging-cnbj2, request-id=a671fe10-68c5-25d6-0000-019eb9a5bbfb",
+      "errorMessage": "HTTP 状态码不符合预期：期望 200，实际 403"
+    }
+  ]
+}

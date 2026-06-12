@@ -5,6 +5,9 @@ import { runReview } from './commands/review.js';
 import { runCodegen } from './commands/codegen.js';
 import { runReport } from './commands/report.js';
 import { runServe } from './commands/serve.js';
+import { runScenarioValidate } from './commands/scenario-validate.js';
+import { runScenarioRun } from './commands/scenario-run.js';
+import { runScenarioReview } from './commands/scenario-review.js';
 
 const PROJECT_ROOT = resolve(import.meta.dirname, '..', '..', '..');
 
@@ -47,11 +50,44 @@ program
   });
 
 program
-  .command('serve <requirement>')
-  .description('启动本地审查服务（支持在浏览器中编辑并保存回 YAML）')
+  .command('serve')
+  .description('启动可视化测试用例平台（审查 + 执行 + 报告）')
+  .option('-r, --requirement <name>', '默认展示的需求')
   .option('-p, --port <port>', '端口号', '3456')
-  .action((requirement: string, opts: { port: string }) => {
-    runServe(requirement, { projectRoot: PROJECT_ROOT, port: parseInt(opts.port) });
+  .action((opts: { requirement?: string; port: string }) => {
+    runServe({ projectRoot: PROJECT_ROOT, port: parseInt(opts.port), requirement: opts.requirement });
+  });
+
+program
+  .command('scenario-validate <requirement>')
+  .description('校验 HTTP 网关场景 YAML（Schema + 一致性检查）')
+  .action((requirement: string) => {
+    runScenarioValidate(requirement, { projectRoot: PROJECT_ROOT });
+  });
+
+program
+  .command('scenario-review <requirement>')
+  .description('生成 HTTP 网关场景可视化审查页面')
+  .action((requirement: string) => {
+    runScenarioReview(requirement, { projectRoot: PROJECT_ROOT });
+  });
+
+program
+  .command('scenario-run <requirement>')
+  .description('执行 HTTP 网关场景测试并生成 JSON 报告')
+  .option('-s, --scenario <id>', '只执行指定场景 ID 或文件名')
+  .option('--base-url <url>', '覆盖场景中的 baseUrl')
+  .option('--cookie-env <name>', '覆盖场景中的 Cookie 环境变量名')
+  .action((requirement: string, opts: { scenario?: string; baseUrl?: string; cookieEnv?: string }) => {
+    runScenarioRun(requirement, {
+      projectRoot: PROJECT_ROOT,
+      scenario: opts.scenario,
+      baseUrl: opts.baseUrl,
+      cookieEnv: opts.cookieEnv,
+    }).catch((error: unknown) => {
+      console.error(`错误: ${error instanceof Error ? error.message : String(error)}`);
+      process.exit(1);
+    });
   });
 
 program
@@ -61,12 +97,12 @@ program
     const { mkdirSync } = require('node:fs');
     const { join } = require('node:path');
     const base = join(PROJECT_ROOT, 'tests', 'integration', requirement);
-    const dirs = ['cases', 'review', 'reports', 'fixtures'];
+    const dirs = ['cases', 'scenarios', 'review', 'reports', 'fixtures'];
     for (const d of dirs) {
       mkdirSync(join(base, d), { recursive: true });
     }
     console.log(`✅ 已初始化测试目录: ${base}`);
-    console.log(`   请将 YAML 用例文件放入 cases/ 目录`);
+    console.log(`   请将 YAML 用例文件放入 cases/ 或 scenarios/ 目录`);
   });
 
 program.parse();

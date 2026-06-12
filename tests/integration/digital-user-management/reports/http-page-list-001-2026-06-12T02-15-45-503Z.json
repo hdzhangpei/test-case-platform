@@ -1,0 +1,37 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "page-list-001",
+  "scenarioName": "分页查询数字人列表",
+  "generated": "2026-06-12T02-15-45-503Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.046
+  },
+  "steps": [
+    {
+      "id": "query-list",
+      "name": "分页查询数字人列表",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/pageDigitalUserList",
+      "status": "failed",
+      "duration": 0.046,
+      "requestBody": {
+        "sceneList": [
+          "new_retail_cn"
+        ],
+        "pageNum": 1,
+        "pageSize": 20,
+        "areaId": "CN"
+      },
+      "responseBody": {
+        "code": 500,
+        "message": "系统繁忙，请稍后重试",
+        "detailMsg": "failed to get dubbo response"
+      },
+      "errorMessage": "断言失败：code 期望 0，实际 500"
+    }
+  ]
+}

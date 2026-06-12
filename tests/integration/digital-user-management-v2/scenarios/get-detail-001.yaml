@@ -1,0 +1,59 @@
+version: "2.0"
+metadata:
+  id: get-detail-001
+  name: 查询数字人详情
+  requirement: digital-user-management
+  author: test
+  created: 2026-06-11
+  tags:
+    - 查询
+    - 详情
+    - SMOKE
+config:
+  baseUrl: ${env:TC_BASE_URL}
+  cookieEnv: TC_COOKIE
+  headers:
+    content-type: application/json;charset=UTF-8
+    group: staging
+    x-retail-locale: CN
+fixtures:
+  testAgentId: test-agent-detail-001
+steps:
+  - id: create-first
+    name: 先创建数字人
+    request:
+      method: POST
+      path: /mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping
+      body:
+        agentId: ${fixture:testAgentId}
+        miId: 9990000301
+        email: test-agent-detail-001@example.com
+        name: 测试岗位虾-详情
+        scene: new_retail_cn
+        areaId: CN
+        positions:
+          - positionId: 1
+            privilegeState: 1
+            relationType: 2
+    expected:
+      status: 200
+      assertions:
+        - type: equals
+          target: code
+          value: 0
+  - id: query-detail
+    name: 查询数字人详情
+    request:
+      method: POST
+      path: /mtop/meta/eiam/admin/digitalUser/getDigitalUserDetail
+      body:
+        agentId: ${fixture:testAgentId}
+        scene: new_retail_cn
+    expected:
+      status: 200
+      assertions:
+        - type: not_null
+          target: data
+        - type: equals
+          target: data.agentId
+          value: ${fixture:testAgentId}

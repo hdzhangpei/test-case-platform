@@ -96,6 +96,91 @@ export interface ValidationWarning {
   message: string;
 }
 
+// ============================================================
+// HTTP 场景类型 (version 2.0)
+// ============================================================
+
+export interface HttpScenario {
+  version: '2.0';
+  metadata: HttpScenarioMetadata;
+  config?: HttpScenarioConfig;
+  fixtures?: Record<string, unknown>;
+  steps: HttpScenarioStep[];
+}
+
+export interface HttpScenarioMetadata {
+  id: string;
+  name: string;
+  requirement: string;
+  author?: string;
+  created?: string;
+  tags?: string[];
+}
+
+export interface HttpScenarioConfig {
+  baseUrl?: string;
+  cookieEnv?: string;
+  headers?: Record<string, string>;
+}
+
+export interface HttpScenarioStep {
+  id: string;
+  name: string;
+  request: HttpScenarioRequest;
+  expected?: HttpScenarioExpected;
+  capture?: Record<string, string>;
+}
+
+export interface HttpScenarioRequest {
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  path: string;
+  headers?: Record<string, string>;
+  body?: unknown;
+}
+
+export interface HttpScenarioExpected {
+  status?: number;
+  assertions?: HttpAssertionDef[];
+}
+
+export interface HttpAssertionDef {
+  type: 'not_null' | 'equals' | 'contains' | 'true' | 'false' | 'greater_than';
+  target: string;
+  value?: unknown;
+}
+
+export interface HttpScenarioRunReport {
+  requirement: string;
+  scenarioId: string;
+  scenarioName: string;
+  generated: string;
+  baseUrl: string;
+  summary: {
+    total: number;
+    passed: number;
+    failed: number;
+    duration: number;
+  };
+  steps: HttpScenarioStepResult[];
+}
+
+export interface HttpScenarioStepResult {
+  id: string;
+  name: string;
+  method: string;
+  url: string;
+  status: 'passed' | 'failed';
+  httpStatus?: number;
+  duration: number;
+  requestBody?: unknown;
+  responseBody?: unknown;
+  errorMessage?: string;
+}
+
+// ============================================================
+// 原有报告类型
+// ============================================================
+
 export interface TestReport {
   requirement: string;
   generated: string;

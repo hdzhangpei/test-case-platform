@@ -1,0 +1,44 @@
+{
+  "requirement": "digital-user-management",
+  "scenarioId": "create-mapping-003",
+  "scenarioName": "创建数字人映射（异常流：跨领域校验）",
+  "generated": "2026-06-12T02-27-26-327Z",
+  "baseUrl": "https://work-be.test.mi.com",
+  "summary": {
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "duration": 0.048
+  },
+  "steps": [
+    {
+      "id": "create-cn",
+      "name": "在国内场景创建",
+      "method": "POST",
+      "url": "https://work-be.test.mi.com/mtop/meta/eiam/admin/digitalUser/createDigitalUserMapping",
+      "status": "failed",
+      "duration": 0.048,
+      "requestBody": {
+        "agentId": "test-agent-cross-001",
+        "miId": 999000020,
+        "email": "test-agent-cross-001@example.com",
+        "name": "测试岗位虾-跨领域",
+        "scene": "new_retail_cn",
+        "areaId": "CN",
+        "positions": [
+          {
+            "positionId": 1,
+            "privilegeState": 1,
+            "relationType": 2
+          }
+        ]
+      },
+      "responseBody": {
+        "code": 500,
+        "message": "系统繁忙，请稍后重试",
+        "detailMsg": "failed to get dubbo response"
+      },
+      "errorMessage": "断言失败：code 期望 0，实际 500"
+    }
+  ]
+}
