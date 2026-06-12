@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "installCommand": "npm install && cd tools/api-test-framework && npm install",
-  "buildCommand": "cd tools/api-test-framework && npx tsc",
+  "buildCommand": "bash build.sh",
   "builds": [
     {
       "src": "api/index.js",
